@@ -150,6 +150,8 @@ app.use(cookieParser());
 
 app.use("/api", require("./routes/chatRoutes"));
 app.use("/api", require("./routes/paymentRoutes"));
+app.use("/api", require("./routes/dashboard/variants/variants"));
+
 app.use("/api", require("./routes/dashboard/dashboardIndexRoutes"));
 app.use("/api/admin", require("./routes/bannerRoutes.js"));
 app.use("/api/home", require("./routes/home/homeRoutes"));

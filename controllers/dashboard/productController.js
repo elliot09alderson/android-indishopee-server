@@ -2,6 +2,7 @@ const formidable = require("formidable");
 const cloudinary = require("cloudinary").v2;
 const productModel = require("../../models/productModel");
 const { responseReturn } = require("../../utiles/response");
+const ProductDetailsModel = require("../../models/productDetailsModel");
 class productController {
   add_product = async (req, res) => {
     const { id } = req;
@@ -220,6 +221,131 @@ class productController {
         }
       }
     });
+  };
+
+  addVariants = async (req, res) => {
+    const { productId } = req.params;
+    const form = formidable({ multiples: true });
+    console.log("data reached");
+    form.parse(req, async (err, field, files) => {
+      const { images } = files;
+      if (!images) {
+        return responseReturn(res, 400, {
+          error: "please provide atleast one image",
+        });
+      }
+      let { type, color, size, ram, storage, price, stock } = field;
+      console.log("field==> ", field);
+      if ((!type, !color, !price, !stock)) {
+        responseReturn(res, 400, {
+          message: "please provide details correctly",
+        });
+      }
+
+      try {
+        const cropParams = {
+          width: 500,
+          height: 500,
+          crop: "crop", // Use 'crop' to perform cropping
+          gravity: "auto", // Use 'auto' to automatically detect the most relevant region
+        };
+        let allImageUrl = [];
+        if (!Array.isArray(images)) {
+          const result = await cloudinary.uploader.upload(images.filepath, {
+            folder: "products",
+          });
+
+          allImageUrl = [...allImageUrl, result.url];
+        } else {
+          for (let i = 0; i < images.length; i++) {
+            const result = await cloudinary.uploader.upload(
+              images[i].filepath,
+              {
+                folder: "products-variants",
+                transformation: cropParams,
+                resource_type: "image",
+              }
+            );
+            allImageUrl = [...allImageUrl, result.url];
+          }
+        }
+
+        const variant = await ProductDetailsModel.create({
+          productId,
+          type: type.toLowerCase(),
+          color,
+          ram: ram ? ram : "",
+          storage: storage ? storage : "",
+          price,
+          size: size ? size : "",
+          stock,
+          images: allImageUrl,
+        });
+        console.log("createdVariant", variant);
+        if (variant) {
+          const productDetails = await productModel.findOneAndUpdate(
+            { _id: productId },
+            {
+              //push variant Id here to variations field if it is not present
+              $addToSet: {
+                variations: variant._id,
+              },
+            },
+            { new: true }
+          );
+
+          if (productDetails) {
+            console.log(
+              "Variant successfully added to product variations:",
+              productDetails
+            );
+            responseReturn(res, 201, {
+              message: "product variant added successfully",
+              variant,
+            });
+          } else {
+            console.log("Product not found or update failed.");
+            responseReturn(res, 201, {
+              message: "product add variant operation failed ",
+            });
+          }
+        }
+      } catch (error) {
+        console.log(error.message, "error");
+        responseReturn(res, 500, { error: error.message });
+      }
+    });
+  };
+
+  getDetailsWithVariants = async (req, res) => {
+    const { productId } = req.params;
+
+    try {
+      // Find the product by its ID and populate the variations field
+      const productDetails = await productModel
+        .findById(productId)
+        .populate({
+          path: "variations", // Reference the variations field
+          model: "variants", // The model name of the related schema
+        })
+        .select("-createdAt -updatedAt -__v");
+
+      if (productDetails) {
+        responseReturn(res, 200, {
+          message: "Product details retrieved successfully",
+          data: productDetails,
+          status: 200,
+        });
+      } else {
+        responseReturn(res, 200, { status: 404, message: "Product not found" });
+      }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      responseReturn(res, 500, {
+        message: "Internal Server Error",
+        error: error.message,
+      });
+    }
   };
 }
 

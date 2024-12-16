@@ -56,6 +56,12 @@ const productSchema = new Schema(
       type: Number,
       default: 0,
     },
+    variations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "variants",
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -65,7 +71,7 @@ productSchema.index(
     name: "text",
     category: "text",
     brand: "text",
-    description: "text",
+    // description: "text",
   },
   {
     weights: {
