@@ -74,6 +74,9 @@ const productSchema = new Schema(
     color: {
       type: String,
     },
+
+    size: { type: String },
+    colorName: { type: String },
     variations: [
       {
         type: Schema.Types.ObjectId,

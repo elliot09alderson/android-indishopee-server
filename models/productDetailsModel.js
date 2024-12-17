@@ -45,6 +45,7 @@ const productDetailsSchema = new Schema(
       required: true,
       default: 1,
     },
+    colorName: { type: String },
     images: {
       type: [String],
       required: true,

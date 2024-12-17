@@ -8,8 +8,8 @@ module.exports.dbConnect = async () => {
       .then(() => console.log("database connected....", process.env.DB_URL));
 
     // const result = await productModel.updateMany(
-    //   { sponsors: { $exists: false } }, // Check if "sponsors" does not already exist
-    //   { $set: { sponsors: [] } } // Set default value as an empty array
+    //   { size: { $exists: false } }, // Check if "sponsors" does not already exist
+    //   { size: "" } // Set default value as an empty array
     // );
 
     // console.log("Migration Complete:", result);

@@ -523,7 +523,24 @@ class productController {
         responseReturn(res, 200, {
           message: "Product details retrieved successfully",
           data: {
-            productDetails,
+            productDetails: {
+              ...productDetails._doc,
+              variations: [
+                {
+                  productId: productDetails.productId,
+                  type: productDetails?.type,
+                  ram: productDetails.ram,
+                  storage: productDetails.storage,
+                  color: productDetails.color,
+                  colorName: productDetails.colorName,
+                  size: productDetails.size,
+                  price: productDetails.price,
+                  stock: productDetails.stock,
+                  images: productDetails.images,
+                },
+                ...productDetails.variations,
+              ],
+            },
             relatedProducts,
             moreProducts,
             sponsors: sponsors[0].sponsors,
