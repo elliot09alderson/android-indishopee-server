@@ -74,7 +74,6 @@ class homeControllers {
       const product = await productModel.findOne({
         slug,
       });
-      console.log(product);
 
       const relatedProducts = await productModel.aggregate([
         {

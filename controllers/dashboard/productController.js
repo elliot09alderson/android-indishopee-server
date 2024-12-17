@@ -1,5 +1,6 @@
 const formidable = require("formidable");
 const cloudinary = require("cloudinary").v2;
+const mongoose = require("mongoose");
 const productModel = require("../../models/productModel");
 const { responseReturn } = require("../../utiles/response");
 const ProductDetailsModel = require("../../models/productDetailsModel");
@@ -317,6 +318,47 @@ class productController {
     });
   };
 
+  addSponsorship = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { sponsoredId } = req.body;
+
+      if (sponsoredId) {
+        const sponsor = await productModel.findOneAndUpdate(
+          { _id: productId },
+          {
+            //push variant Id here to variations field if it is not present
+            $addToSet: {
+              sponsors: sponsoredId,
+            },
+          },
+          { new: true }
+        );
+
+        // console.log(productId);
+        if (sponsor) {
+          console.log(
+            "sponsor successfully added to product sponsorlist:",
+            sponsor
+          );
+          responseReturn(res, 201, {
+            message: "sponsor added successfully",
+            sponsor,
+          });
+        } else {
+          console.log("Product not found or update failed.");
+          responseReturn(res, 400, {
+            message: "sponsor add operation failed ",
+          });
+        }
+      }
+      responseReturn(res, 400, {
+        error: "please provide sponsor id",
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   getDetailsWithVariants = async (req, res) => {
     const { productId } = req.params;
 
@@ -330,10 +372,123 @@ class productController {
         })
         .select("-createdAt -updatedAt -__v");
 
+      const sponsors = await productModel.aggregate([
+        // Match the product by ID
+        {
+          $match: { _id: new mongoose.Types.ObjectId(productId) }, // Convert productId to ObjectId
+        },
+
+        // Lookup to populate the sponsors
+        {
+          $lookup: {
+            from: "products", // Name of the collection (Mongoose pluralizes model names)
+            localField: "sponsors", // Field in the product schema
+            foreignField: "_id", // Field in the sponsors schema
+            as: "sponsorDetails", // Alias for the populated data
+          },
+        },
+
+        // Project only necessary fields
+        {
+          $project: {
+            _id: 0, // Exclude main product ID
+            sponsors: {
+              $map: {
+                input: "$sponsorDetails",
+                as: "sponsor",
+                in: {
+                  image: { $arrayElemAt: ["$$sponsor.images", 0] }, // First image
+                  brand: "$$sponsor.brand",
+                  price: "$$sponsor.price",
+                  discount: "$$sponsor.discount",
+                },
+              },
+            },
+          },
+        },
+      ]);
+
+      const relatedProducts = await productModel.aggregate([
+        {
+          $match: {
+            $and: [
+              {
+                _id: {
+                  $ne: productDetails._id,
+                },
+              },
+              {
+                category: {
+                  $eq: productDetails.category,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            slug: 1,
+            category: 1,
+            rating: 1,
+            subcategory: 1,
+            brand: 1,
+            price: 1,
+            discount: 1,
+            stock: 1,
+            description: 1,
+            // Use $arrayElemAt to get the first image
+            images: 1,
+          },
+        },
+      ]);
+
+      const moreProducts = await productModel.aggregate([
+        {
+          $match: {
+            $and: [
+              {
+                _id: {
+                  $ne: productId,
+                },
+              },
+              {
+                sellerId: {
+                  $eq: productDetails.sellerId,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            slug: 1,
+            category: 1,
+            rating: 1,
+            subcategory: 1,
+            brand: 1,
+            price: 1,
+            discount: 1,
+            stock: 1,
+            description: 1,
+            // Use $arrayElemAt to get the first image
+            images: 1,
+          },
+        },
+      ]);
+
       if (productDetails) {
         responseReturn(res, 200, {
           message: "Product details retrieved successfully",
-          data: productDetails,
+          data: {
+            productDetails,
+            relatedProducts,
+            moreProducts,
+            sponsors: sponsors[0].sponsors,
+          },
           status: 200,
         });
       } else {

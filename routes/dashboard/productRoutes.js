@@ -25,4 +25,13 @@ router.post(
   productController.product_image_update
 );
 
+/**
+ *
+ *
+ *   @ANDROID
+ *
+ */
+
+router.post("/product/sponsor/:productId", productController.addSponsorship);
+
 module.exports = router;

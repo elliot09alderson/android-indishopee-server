@@ -56,6 +56,21 @@ const productSchema = new Schema(
       type: Number,
       default: 0,
     },
+    sponsors: [
+      {
+        type: Schema.ObjectId,
+        ref: "products",
+        // required: true,
+      },
+    ],
+    free_delivery: {
+      type: String,
+      default: "free",
+    },
+    returnPolicy: {
+      type: String,
+      default: "7 days",
+    },
     variations: [
       {
         type: Schema.Types.ObjectId,
