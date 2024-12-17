@@ -71,6 +71,9 @@ const productSchema = new Schema(
       type: String,
       default: "7 days",
     },
+    color: {
+      type: String,
+    },
     variations: [
       {
         type: Schema.Types.ObjectId,

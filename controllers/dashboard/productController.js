@@ -359,7 +359,45 @@ class productController {
       console.log(error.message);
     }
   };
+
   getDetailsWithVariants = async (req, res) => {
+    const { productId } = req.params;
+
+    try {
+      // Find the product by its ID and populate the variations field
+      const productDetails = await productModel
+        .findById(productId)
+        .populate({
+          path: "variations", // Reference the variations field
+          model: "variants", // The model name of the related schema
+        })
+        .select("-createdAt -updatedAt -__v");
+
+      if (productDetails) {
+        responseReturn(res, 200, {
+          message: "Product details retrieved successfully",
+          data: productDetails,
+
+          status: 200,
+        });
+      } else {
+        responseReturn(res, 200, { status: 404, message: "Product not found" });
+      }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      responseReturn(res, 500, {
+        message: "Internal Server Error",
+        error: error.message,
+      });
+    }
+  };
+
+  /**
+   *
+   * @ANDROID
+   *
+   */
+  getDetailsWithVariantsForAndroid = async (req, res) => {
     const { productId } = req.params;
 
     try {
@@ -401,6 +439,7 @@ class productController {
                   brand: "$$sponsor.brand",
                   price: "$$sponsor.price",
                   discount: "$$sponsor.discount",
+                  name: "$$sponsor.discount",
                 },
               },
             },

@@ -2,21 +2,25 @@ const variantRouter = require("express").Router();
 const { authMiddleware } = require("../../../middlewares/authMiddleware");
 const productController = require("../../../controllers/dashboard/productController");
 
-/**
- *
- * @ANDROID
- *
- */
+variantRouter.get(
+  "/product/variants/:productId",
 
+  productController.getDetailsWithVariants
+);
 variantRouter.post(
   "/product/variants/:productId",
   authMiddleware,
   productController.addVariants
 );
 
-variantRouter.get(
-  "/product/variants/:productId",
+/**
+ *
+ * @ANDROID
+ *
+ */
 
-  productController.getDetailsWithVariants
+variantRouter.get(
+  "/android/product/variants/:productId",
+  productController.getDetailsWithVariantsForAndroid
 );
 module.exports = variantRouter;
