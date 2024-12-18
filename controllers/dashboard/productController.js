@@ -439,7 +439,7 @@ class productController {
                   brand: "$$sponsor.brand",
                   price: "$$sponsor.price",
                   discount: "$$sponsor.discount",
-                  name: "$$sponsor.discount",
+                  name: "$$sponsor.name",
                 },
               },
             },
