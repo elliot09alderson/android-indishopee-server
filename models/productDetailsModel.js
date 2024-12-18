@@ -21,7 +21,7 @@ const productDetailsSchema = new Schema(
     size: {
       type: String, // For clothes (e.g., 'S', 'M', 'L')
       required: function () {
-        return this.type === "clothes";
+        return this.type === "clothes" || this.type === "shoes";
       },
     },
     ram: {

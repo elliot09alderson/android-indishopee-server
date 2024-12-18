@@ -32,6 +32,7 @@ async function sendLoginPhoneOTP(req, res) {
     res.json({
       success: true,
       status: 200,
+      otp,
       message: "we have sent login otp to your number",
     });
     console.log("SMS sent successfully:", smsResponse);
