@@ -193,22 +193,23 @@ class homeControllers {
       });
       const totalProduct = new queryProducts(products, req.query)
         .categoryQuery()
+        // .subcategoryQuery()
         .searchQuery()
         .priceQuery()
         .ratingQuery()
         .sortByPrice()
         .countProducts();
 
-      console.log(req.query);
-
       const result = new queryProducts(products, req.query)
         .categoryQuery()
-        // .searchQuery()
+        // .subcategoryQuery()
+
+        .searchQuery()
         .ratingQuery()
         .priceQuery()
         .sortByPrice()
-        // .skip()
-        // .limit()
+        .skip()
+        .limit()
         .getProducts();
 
       responseReturn(res, 200, {
