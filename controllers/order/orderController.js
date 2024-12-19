@@ -21,7 +21,7 @@ const stripe = require("stripe")(
 class orderController {
   add_address = async (req, res) => {
     try {
-      const userInfo = req.id
+      const userInfo = req.id;
       const {
         pincode,
         state,
@@ -31,6 +31,11 @@ class orderController {
         houseNumber,
         area,
         defaultAddress,
+        typeOfAddress,
+        housenumber,
+        phonenumber,
+        name,
+        city,
       } = req.body;
 
       const address = await customerAddressModel.create({
@@ -38,15 +43,28 @@ class orderController {
         state,
         district,
         landmark,
-        phonenumber: phoneNumber,
-        housenumber: houseNumber,
+        phonenumber: phoneNumber || phonenumber,
+        housenumber: houseNumber || housenumber,
         area,
         defaultAddress,
         userId: userInfo,
+        typeOfAddress,
+        name,
+        city,
       });
 
       if (address) {
-        responseReturn(res, 201, { address });
+        responseReturn(res, 200, {
+          address,
+          message: "address creaeted successfully",
+          status: 200,
+        });
+      } else {
+        responseReturn(res, 200, {
+          address,
+          message: "address creaeted failed",
+          status: 400,
+        });
       }
     } catch (error) {
       console.log(error.message);
@@ -99,7 +117,7 @@ class orderController {
     }
   };
   get_default_address = async (req, res) => {
-    const  userInfo = req.id;
+    const userInfo = req.id;
     try {
       const address = await customerAddressModel.findOne({
         userId: userInfo,
@@ -158,7 +176,7 @@ class orderController {
 
   place_order = async (req, res) => {
     const { price, products, shipping_fee, shippingInfo } = req.body;
-    const userId = req.id
+    const userId = req.id;
     // console.log("customerOrderProduct==========>>>>>>>", products);
 
     // console.log("price=====> ", price);
@@ -302,7 +320,7 @@ class orderController {
 
   get_admin_orders = async (req, res) => {
     let { page, parPage, searchValue } = req.query;
-    console.log(page,parPage,searchValue)
+    console.log(page, parPage, searchValue);
     page = parseInt(page);
     parPage = parseInt(parPage);
 
@@ -383,7 +401,7 @@ class orderController {
   };
 
   get_seller_orders = async (req, res) => {
-    const  sellerId =req.id
+    const sellerId = req.id;
     let { page, parPage, searchValue } = req.query;
     page = parseInt(page);
     parPage = parseInt(parPage);

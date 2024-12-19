@@ -259,6 +259,7 @@ class cardController {
           });
           responseReturn(res, 200, {
             message: "add to wishlist success",
+
             status: 200,
           });
         } else {
@@ -281,7 +282,7 @@ class cardController {
         .find({
           userId,
         })
-        .select("name price discount image rating slug");
+        .select("name price discount image rating slug productId");
       responseReturn(res, 200, {
         wishlistCount: wishlists.length,
         wishlists,

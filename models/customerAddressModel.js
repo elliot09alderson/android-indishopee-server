@@ -30,7 +30,6 @@ const customerAddress = new Schema(
     },
     pincode: {
       type: String,
-      required: true,
     },
     defaultAddress: {
       type: Boolean,
@@ -38,11 +37,9 @@ const customerAddress = new Schema(
     },
     landmark: {
       type: String,
-      required: true,
     },
     district: {
       type: String,
-      required: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
