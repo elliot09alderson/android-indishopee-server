@@ -109,6 +109,7 @@ class orderController {
       if (address) {
         responseReturn(res, 200, {
           message: "address fetched successfully",
+          status: 200,
           address,
         });
       }
@@ -146,6 +147,30 @@ class orderController {
 
       if (address) {
         responseReturn(res, 200, { userId });
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  delete_single_address = async (req, res) => {
+    try {
+      const { addressId } = req.params;
+
+      const address = await customerAddressModel.findByIdAndDelete(addressId);
+
+      if (address) {
+        responseReturn(res, 200, {
+          addressId,
+          message: "address deleted successfully",
+          status: 200,
+        });
+      } else {
+        responseReturn(res, 200, {
+          addressId,
+          message: "address not found",
+          status: 400,
+        });
       }
     } catch (error) {
       console.log(error.message);

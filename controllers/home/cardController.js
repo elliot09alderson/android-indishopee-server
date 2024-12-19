@@ -208,6 +208,7 @@ class cardController {
       });
       responseReturn(res, 200, {
         message: "success",
+        status: 200,
       });
     } catch (error) {
       console.log(error.message);
@@ -223,6 +224,7 @@ class cardController {
       });
       responseReturn(res, 200, {
         message: "success",
+        status: 200,
       });
     } catch (error) {
       console.log(error.message);
@@ -241,8 +243,9 @@ class cardController {
       });
 
       if (product) {
-        responseReturn(res, 404, {
-          error: "Allready added",
+        responseReturn(res, 200, {
+          message: "item Allready added",
+          status: 400,
         });
       } else {
         const product = await productModel.findOne({ slug });
