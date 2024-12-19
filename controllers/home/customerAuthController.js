@@ -4,6 +4,52 @@ const { createToken } = require("../../utiles/tokenCreate");
 const sellerCustomerModel = require("../../models/chat/sellerCustomerModel");
 const bcrypt = require("bcryptjs");
 class customerAuthController {
+  getRecentSearches = async (userId) => {
+    try {
+      const recentSearch = await RecentSearch.findOne({ userId });
+      return recentSearch ? recentSearch.searches : [];
+    } catch (error) {
+      console.error("Error fetching recent searches:", error);
+      return [];
+    }
+  };
+  addRecentSearch = async (userId, searchQuery) => {
+    try {
+      // Find the recent searches for the user
+      let createdRecentSearch = await recentSearch.findOne({ userId });
+
+      if (!createdRecentSearch) {
+        // Create a new record if it doesn't exist
+        createdRecentSearch = new recentSearch({
+          userId,
+          searches: [{ query: searchQuery }],
+        });
+      } else {
+        // Add the new search query to the beginning of the array
+        createdRecentSearch.searches.unshift({ query: searchQuery });
+
+        // Ensure only the latest 10 searches are kept
+        if (createdRecentSearch.searches.length > 10) {
+          createdRecentSearch.searches = createdRecentSearch.searches.slice(
+            0,
+            10
+          );
+        }
+      }
+
+      // Save the updated record
+      await createdRecentSearch.save();
+      console.log("Recent search updated successfully!");
+    } catch (error) {
+      console.error("Error updating recent searches:", error.message);
+    }
+  };
+
+  /**
+   *
+   * ACTUAL CONTROLLERS BELOW
+   *
+   */
   customer_register = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -74,6 +120,21 @@ class customerAuthController {
     });
 
     responseReturn(res, 200, { message: "Logout success" });
+  };
+
+  getRecentSearches = async (req, res) => {
+    const userId = req.query.userId; // Assume user ID is passed as a query param
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    try {
+      const recentSearches = await getRecentSearches(userId);
+      res.json(recentSearches);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch recent searches" });
+    }
   };
 }
 

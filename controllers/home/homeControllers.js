@@ -193,7 +193,7 @@ class homeControllers {
       });
       const totalProduct = new queryProducts(products, req.query)
         .categoryQuery()
-        // .subcategoryQuery()
+
         .searchQuery()
         .priceQuery()
         .ratingQuery()
@@ -202,7 +202,6 @@ class homeControllers {
 
       const result = new queryProducts(products, req.query)
         .categoryQuery()
-        // .subcategoryQuery()
 
         .searchQuery()
         .ratingQuery()

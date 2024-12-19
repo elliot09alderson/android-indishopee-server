@@ -234,7 +234,7 @@ class cardController {
    */
   add_wishlist = async (req, res) => {
     const { slug } = req.body;
-    console.log(slug);
+
     try {
       const product = await wishlistModel.findOne({
         slug,
@@ -246,20 +246,27 @@ class cardController {
         });
       } else {
         const product = await productModel.findOne({ slug });
-        await wishlistModel.create({
-          userId: req.id,
-          productId: product._id,
-          name: product.name,
-          slug,
-          price: product.price,
-          discount: product.discount,
-          image: product?.images[0],
-          rating: product.rating,
-        });
-        responseReturn(res, 201, {
-          message: "add to wishlist success",
-          status: 201,
-        });
+        if (product) {
+          await wishlistModel.create({
+            userId: req.id,
+            productId: product._id,
+            name: product.name,
+            slug,
+            price: product.price,
+            discount: product.discount,
+            image: product?.images[0],
+            rating: product.rating,
+          });
+          responseReturn(res, 200, {
+            message: "add to wishlist success",
+            status: 200,
+          });
+        } else {
+          responseReturn(res, 200, {
+            message: "product not found",
+            status: 400,
+          });
+        }
       }
     } catch (error) {
       console.log(error.message);
