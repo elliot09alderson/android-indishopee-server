@@ -237,10 +237,11 @@ class cardController {
   add_wishlist = async (req, res) => {
     const { slug } = req.body;
 
+    const userId = req.id;
     try {
-      const product = await wishlistModel.findOne({
-        slug,
-      });
+      const product = await wishlistModel.findOne({ userId, slug });
+
+      console.log(product);
 
       if (product) {
         responseReturn(res, 200, {
