@@ -7,12 +7,7 @@ const recentSearchSchema = new Schema(
       ref: "customers", // Reference to the User model
       required: true,
     },
-    searches: [
-      {
-        query: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now },
-      },
-    ],
+    searches: [{ type: String, required: true }],
   },
   { timestamps: true }
 );

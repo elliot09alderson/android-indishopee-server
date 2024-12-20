@@ -10,6 +10,7 @@ const {
 const { responseReturn } = require("../../utiles/response");
 const bannerModel = require("../../models/bannerModel");
 const subCategory = require("../../models/subCategory");
+const recentSearch = require("../../models/recentSearch");
 class homeControllers {
   formateProduct = (products) => {
     const productArray = [];
@@ -200,6 +201,43 @@ class homeControllers {
         .sortByPrice()
         .countProducts();
 
+      /**
+       *
+       * @recent_searches
+       *
+       */
+
+      const query = req.query.searchValue;
+      const userId = req.id;
+
+      if (userId && query) {
+        try {
+          // Find the recent searches for the user
+          let RecentSearch = await recentSearch.findOne({ userId });
+
+          if (!RecentSearch) {
+            // If the user doesn't have a recent search, create a new record
+            RecentSearch = new recentSearch({ userId, searches: [query] });
+          } else {
+            // Check if the query already exists
+            if (!RecentSearch.searches.includes(query)) {
+              // Add the query to the beginning of the array
+              RecentSearch.searches.unshift(query);
+
+              // Limit the array to the latest 10 searches
+              if (RecentSearch.searches.length > 10) {
+                RecentSearch.searches.pop();
+              }
+            }
+          }
+
+          // Save the recent searches
+          await RecentSearch.save();
+        } catch (error) {
+          console.error(error.message);
+        }
+      }
+
       const result = new queryProducts(products, req.query)
         .categoryQuery()
 
@@ -215,6 +253,28 @@ class homeControllers {
         products: result,
         totalProduct,
         parPage,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  get_recent_searches = async (req, res) => {
+    try {
+      const userId = req.id;
+      if (userId) {
+        const RecentSearches = await recentSearch.findOne({
+          userId,
+        });
+        return responseReturn(res, 200, {
+          searches: RecentSearches.searches,
+          message: "recent searches fetched.. ",
+          status: 200,
+        });
+      }
+      responseReturn(res, 200, {
+        message: "please login to see searches",
+        status: 400,
       });
     } catch (error) {
       console.log(error.message);

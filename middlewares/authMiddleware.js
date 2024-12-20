@@ -53,3 +53,30 @@ module.exports.customerMiddleware = async (req, res, next) => {
     }
   }
 };
+
+module.exports.searchMiddleware = async (req, res, next) => {
+  const { customerToken, accessToken } = req.cookies;
+  const auhthorizationHeader = req.headers.authorization;
+
+  // const { accessToken } = req.cookies;
+  if (!customerToken && !auhthorizationHeader) {
+    next();
+  } else {
+    try {
+      const deCodeToken = await jwt.verify(
+        customerToken || accessToken || auhthorizationHeader,
+        process.env.SECRET
+      );
+      console.log(deCodeToken);
+      // console.log("deCodeToken.......", deCodeToken);
+      req.role = deCodeToken.role || "seller";
+      req.user = deCodeToken;
+
+      req.id = deCodeToken.id;
+      next();
+    } catch (error) {
+      console.log(error.message);
+      next();
+    }
+  }
+};

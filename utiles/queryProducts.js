@@ -44,6 +44,8 @@ class queryProducts {
     return this;
   };
   searchQuery = () => {
+
+    
     this.products = this.query.searchValue
       ? this.products.filter(
           (p) =>
@@ -57,6 +59,9 @@ class queryProducts {
 
     return this;
   };
+
+
+
   sortByPrice = () => {
     if (this.query.sortPrice) {
       if (this.query.sortPrice === "low-to-high") {

@@ -219,12 +219,17 @@ class cardController {
     try {
       const product = await cardModel.findById(card_id);
       const { quantity } = product;
-      await cardModel.findByIdAndUpdate(card_id, {
-        quantity: quantity - 1,
-      });
+      const updatedCard = await cardModel.findOneAndUpdate(
+        { _id: card_id, quantity: { $gt: 1 } }, // Check if quantity > 1
+        { $inc: { quantity: -1 } }, // Decrement quantity by 1
+        { new: true } // Return the updated document
+      );
+      // await cardModel.findByIdAndUpdate(card_id, {
+      //   quantity: quantity - 1,
+      // });
       responseReturn(res, 200, {
-        message: "success",
-        status: 200,
+        message: "please increase",
+        status: 400,
       });
     } catch (error) {
       console.log(error.message);
@@ -555,9 +560,11 @@ class cardController {
     try {
       const product = await cardModel.findById(card_id);
       const { quantity } = product;
-      await cardModel.findByIdAndUpdate(card_id, {
-        quantity: quantity - 1,
-      });
+      const updatedCard = await cardModel.findOneAndUpdate(
+        { _id: card_id, quantity: { $gt: 1 } }, // Check if quantity > 1
+        { $inc: { quantity: -1 } }, // Decrement quantity by 1
+        { new: true } // Return the updated document
+      );
       responseReturn(res, 200, {
         message: "success",
       });
