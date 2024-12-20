@@ -31,7 +31,7 @@ router.put(
   "/home/product/quantity-dec/:card_id",
   customerMiddleware,
   cardController.quantity_dec
-);      
+);
 
 router.post(
   "/home/product/add-to-wishlist",
@@ -44,9 +44,15 @@ router.get(
   cardController.get_wishlist
 );
 router.delete(
-  "/home/product/delete-wishlist-product/:wishlistId",
+  "/home/product/delete-wishlist/:wishlistId",
   customerMiddleware,
   cardController.delete_wishlist
+);
+
+router.delete(
+  "/home/product/delete-wishlist-product/:productId",
+  customerMiddleware,
+  cardController.delete_wishlist_product
 );
 
 module.exports = router;

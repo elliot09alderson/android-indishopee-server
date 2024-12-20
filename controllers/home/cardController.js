@@ -321,6 +321,37 @@ class cardController {
     }
   };
 
+  delete_wishlist_product = async (req, res) => {
+    const { productId } = req.params;
+    const userId = req.id;
+    try {
+      const wishlist = await wishlistModel.findOneAndDelete(
+        { userId, productId },
+        {
+          new: true,
+        }
+      );
+      if (wishlist) {
+        responseReturn(res, 200, {
+          message: "Remove success",
+          productId,
+        });
+      } else {
+        responseReturn(res, 200, {
+          message: "product is already removed ",
+          status: 200,
+          productId,
+        });
+      }
+    } catch (error) {
+      console.log(error.message);
+      responseReturn(res, 200, {
+        message: "server error ",
+        status: 500,
+      });
+    }
+  };
+
   /**
    *
    *
