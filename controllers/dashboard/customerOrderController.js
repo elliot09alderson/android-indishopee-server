@@ -7,8 +7,18 @@ const moment = require("moment");
 class customerOrderController {
   create_order = async (req, res) => {
     try {
-      const { couponCode, productId, quantity, address, variationId } =
-        req.body;
+      const {
+        couponCode,
+        productId,
+        quantity,
+        addressName,
+        addressPhonenumber,
+        addressCity,
+        addressState,
+        addressDistrict,
+        addressArea,
+        variationId,
+      } = req.body;
 
       if (!productId || !quantity) {
         return res.status(200).json({
@@ -27,19 +37,9 @@ class customerOrderController {
         productId,
         _id: variationId,
       });
-      if (product) {
-        // console.log(product);
-        if (!coupon) {
-          return res.status(200).json({
-            message: "Invalid or expired coupon code.",
-            status: 404,
-          });
-        }
-        // upto=500 discount = 40% price = 10000
-        // Calculate discount
-
-        let discount = Number(product.price) * quantity;
-        let productPrice = Number(product.price) * quantity;
+      let discount = 0;
+      let productPrice = Number(product.price) * quantity;
+      if (product && coupon) {
         if (coupon.type === "price") {
           discount = productPrice - coupon.value;
         } else if (coupon.type === "discount" && coupon.upto == null) {
@@ -57,7 +57,8 @@ class customerOrderController {
 
         // Ensure the discounted price is not negative
         discount = Math.max(0, discount);
-
+      }
+      if (product) {
         // Respond with the calculated discounted price
         const order = await CusomerOrderModel.create({
           customerId: req.id,
@@ -76,14 +77,25 @@ class customerOrderController {
           discountedPrice: productPrice - discount,
           price: productPrice,
           discount,
-          shippingInfo: address,
+          shippingInfo: {
+            name: addressName,
+            phonenumber: addressPhonenumber,
+            city: addressCity,
+            state: addressState,
+            district: addressDistrict,
+            area: addressArea,
+          },
         });
         return res.status(200).json({
-          message: "Coupon applied successfully.",
+          message: "order created successfully.",
           status: 200,
           order,
         });
       } else {
+        return res.status(200).json({
+          message: "invalid productId or vairantId",
+          status: 400,
+        });
         console.log("invalid productId or vairantId");
       }
     } catch (error) {
