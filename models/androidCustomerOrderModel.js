@@ -7,6 +7,8 @@ const customerOrder = new Schema(
       ref: "customers",
       required: true,
     },
+    selectedSize: { type: String },
+    couponDiscount: { type: Number },
     products: {
       type: Array,
       required: true,

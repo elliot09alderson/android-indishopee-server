@@ -18,6 +18,7 @@ class customerOrderController {
         addressDistrict,
         addressArea,
         variationId,
+        size,
       } = req.body;
 
       if (!productId || !quantity) {
@@ -38,7 +39,7 @@ class customerOrderController {
         _id: variationId,
       });
       let discount = 0;
-      let productPrice = Number(product.price) * quantity;
+      let productPrice = Number(product.discountedPrice) * quantity;
       if (product && coupon) {
         if (coupon.type === "price") {
           discount = productPrice - coupon.value;
@@ -64,19 +65,21 @@ class customerOrderController {
           customerId: req.id,
           appliedCoupon: couponCode,
           payment_status: "pending",
+          discountedPrice: productPrice - discount,
+          price: productPrice,
+          couponDiscount: discount,
+          selectedSize: size,
           products: [
             {
               productId,
               quantity,
               variationId,
-              discount,
-              totalPirce: productPrice,
+              couponDiscount: discount,
+              price: productPrice,
               discountedPrice: productPrice - discount,
+              size,
             },
           ],
-          discountedPrice: productPrice - discount,
-          price: productPrice,
-          discount,
           shippingInfo: {
             name: addressName,
             phonenumber: addressPhonenumber,
@@ -114,17 +117,18 @@ class customerOrderController {
           path: "products.variationId",
           model: "variants",
         })
-        .lean(); // Converts Mongoose documents to plain JavaScript objects
+        .lean()
+        .sort({ createdAt: -1 }); // Converts Mongoose documents to plain JavaScript objects
 
       const formattedOrders = orders.map((order) => ({
         ...order,
         products: order.products.map((product) => ({
+          productDetails: product.variationId, // Rename variationId to productDetails
           productId: product.productId,
           quantity: product.quantity,
           discount: product.discount,
           totalPirce: product.totalPirce,
           discountedPrice: product.discountedPrice,
-          productDetails: product.variationId, // Rename variationId to productDetails
         })),
       }));
       responseReturn(res, 200, {
