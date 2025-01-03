@@ -110,6 +110,11 @@ class productController {
           productId: product._id,
           type: type.toLowerCase(),
           color,
+          name,
+          slug,
+          brand: brand.trim(),
+          description: description.trim(),
+
           ram: ram ? ram : "",
           storage: storage ? storage : "",
           price: parseInt(price),

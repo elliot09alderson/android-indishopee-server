@@ -34,23 +34,31 @@ class customerOrderController {
         isActive: true,
         expiryDate: { $gte: new Date() }, // Ensure the coupon is not expired
       });
+      console.log(coupon);
       const product = await ProductDetailsModel.findOne({
         productId,
         _id: variationId,
       });
+
+      console.log(product);
       let discount = 0;
       let productPrice = Number(product.discountedPrice) * quantity;
       if (product && coupon) {
         if (coupon.type === "price") {
-          discount = productPrice - coupon.value;
+          discount = Number(productPrice) - Number(coupon.value);
+
+          console.log(discount);
         } else if (coupon.type === "discount" && coupon.upto == null) {
+          console.log("discountXXX", discount);
           discount = productPrice - (productPrice * coupon.value) / 100;
+          console.log("discountXXX", discount);
         } else if (coupon.type === "discount" && coupon.upto) {
           if (
             productPrice - (productPrice * coupon.value) / 100 >
             coupon.upto
           ) {
-            discount = coupon.upto;
+            discount = Number(coupon.upto);
+            console.log(discount);
           } else {
             discount = productPrice - (productPrice * coupon.value) / 100;
           }
@@ -59,6 +67,8 @@ class customerOrderController {
         // Ensure the discounted price is not negative
         discount = Math.max(0, discount);
       }
+
+      console.log("discount-->", discount);
       if (product) {
         // Respond with the calculated discounted price
         const order = await CusomerOrderModel.create({
@@ -67,7 +77,7 @@ class customerOrderController {
           payment_status: "pending",
           discountedPrice: productPrice - discount,
           price: productPrice,
-          couponDiscount: discount,
+          couponDiscount: Number(discount),
           selectedSize: size,
           products: [
             {

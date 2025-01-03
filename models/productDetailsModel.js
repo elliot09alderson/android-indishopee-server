@@ -8,7 +8,22 @@ const productDetailsSchema = new Schema(
       ref: "products",
       required: true,
     },
-
+    name: {
+      type: String,
+      required: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+    },
+    brand: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
     discount: { type: Number },
     discountedPrice: { type: Number },
 
