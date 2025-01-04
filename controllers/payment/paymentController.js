@@ -91,7 +91,7 @@ class paymentController {
     const amount = price.toFixed(2);
     const name = currentUser.name || myOrder.shippingInfo.name;
     const email = currentUser.email || "pratikverma9691@gmail.com";
-    const mobile = phone || myOrder.shippingInfo.phonenumber;
+    const mobile = phone || myOrder.shippingInfo.phonenumber.toString();
 
     const signature = getSignature(
       key_id,
@@ -115,6 +115,8 @@ class paymentController {
       udf1: orderId,
       udf2: "Optional2",
     };
+
+    console.log("data-object=>", data, "////");
 
     // ______________PRACTICE CODE TO GENERATE BANK ENCRYPTION DATA _________
     const bankData = {
@@ -239,7 +241,7 @@ class paymentController {
     //__________DECRYPT______________
 
     const encryptedRESPONSE = await sendRequest();
-    console.log("encryptedData===>", encryptedData);
+
     const decryptedRESPONSE = await decrypt(encryptedRESPONSE.data, salt, key);
 
     const jsonData = JSON.parse(decryptedRESPONSE);
