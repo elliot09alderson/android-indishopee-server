@@ -15,6 +15,7 @@ const customerOrder = require("../../models/customerOrder");
 const authOrder = require("../../models/authOrder");
 const cardModel = require("../../models/cardModel");
 const { sendOrderConfirmationEmail } = require("../../utiles/email/sendEmail");
+const androidCustomerOrderModel = require("../../models/androidCustomerOrderModel");
 const stripe = require("stripe")(
   "sk_test_51Nk8Y4F0B89ncn3xMHxYCwnaouDR6zuX83ckbJivv2jOUJ9CTka6anJcKMLnatgeBUeQq1RcRYynSPgp6f5zS4qF00YZFMYHuD"
 );
@@ -25,14 +26,26 @@ class paymentController {
     const apiSECRETkey = process.env.payment_apiSECRETkey;
     const apiSALTkey = process.env.payment_apiSALTkey;
     const apiAESkey = process.env.payment_apiAESkey;
-
     const salt = apiSALTkey; // Salt Key
     const key = apiAESkey; // Encryption Key
     const { orderId, price } = req.body;
     const currentUser = req.user;
+
     // console.log(orderId);
 
     const isAlreadyProcessed = await authOrder.findOne({ orderId });
+    const myOrder = await androidCustomerOrderModel.findById(orderId);
+
+    if (
+      !myOrder ||
+      (myOrder.payment_status == "failed" && myOrder.discountedPrice == price)
+    ) {
+      console.log("price mismathced");
+      return responseReturn(res, 401, {
+        url: null,
+        amount: null,
+      });
+    }
     // console.log("isAlreadyProcessed--->", isAlreadyProcessed);
     if (
       isAlreadyProcessed?.payment_status === "failed" ||
@@ -71,14 +84,14 @@ class paymentController {
     }
 
     const phone = isAlreadyProcessed?.shippingInfo?.phone;
-    console.log(phone);
+
     const key_id = clientId;
     const key_secret = apiSECRETkey;
     const txncurr = "INR";
     const amount = price.toFixed(2);
-    const name = currentUser.name;
-    const email = currentUser.email;
-    const mobile = phone;
+    const name = currentUser.name || myOrder.shippingInfo.name;
+    const email = currentUser.email || "pratikverma9691@gmail.com";
+    const mobile = phone || myOrder.shippingInfo.phonenumber;
 
     const signature = getSignature(
       key_id,
@@ -95,10 +108,10 @@ class paymentController {
       key_id: clientId,
       key_secret: apiSECRETkey,
       signature,
-      mobile: phone,
+      mobile,
       txnCurr: "INR",
-      email: currentUser.email,
-      name: currentUser.name,
+      email,
+      name,
       udf1: orderId,
       udf2: "Optional2",
     };
@@ -111,10 +124,10 @@ class paymentController {
       signature,
       date: "January 04, 2024, 01:08 am",
 
-      mobile: phone,
+      mobile,
       txnCurr: "INR",
-      email: currentUser.email,
-      name: currentUser.name,
+      email,
+      name,
       udf1: orderId,
       description: "Transaction Successfull",
       udf2: "Optional2",
@@ -164,6 +177,7 @@ class paymentController {
       }
     }
     const encryptedData = encrypt(data, salt, key);
+
     async function sendRequest() {
       try {
         const { data } = await axios.post(
@@ -178,6 +192,7 @@ class paymentController {
             },
           }
         );
+        console.log("data==>", data);
         return data;
       } catch (error) {
         console.error("Error:", error.message);
@@ -220,13 +235,13 @@ class paymentController {
         return "Encrypted String, Salt, and Key are required.";
       }
     }
-    sendRequest();
 
     //__________DECRYPT______________
 
     const encryptedRESPONSE = await sendRequest();
     console.log("encryptedData===>", encryptedData);
     const decryptedRESPONSE = await decrypt(encryptedRESPONSE.data, salt, key);
+
     const jsonData = JSON.parse(decryptedRESPONSE);
 
     // console.log(jsonData);
@@ -238,8 +253,6 @@ class paymentController {
         { new: true }
       );
     }
-
-    const order = await authOrder.findOne({ orderId });
 
     setTimeout(async () => {
       console.log("timer attached");

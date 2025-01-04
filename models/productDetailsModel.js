@@ -8,6 +8,10 @@ const productDetailsSchema = new Schema(
       ref: "products",
       required: true,
     },
+    sellerId: {
+      type: Schema.ObjectId,
+      required: true,
+    },
     name: {
       type: String,
       required: true,

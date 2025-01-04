@@ -1,4 +1,5 @@
 const CusomerOrderModel = require("../../models/androidCustomerOrderModel.js");
+const authOrder = require("../../models/authOrder.js");
 const couponModel = require("../../models/couponModel.js");
 const ProductDetailsModel = require("../../models/productDetailsModel.js");
 const productModel = require("../../models/productModel.js");
@@ -34,31 +35,24 @@ class customerOrderController {
         isActive: true,
         expiryDate: { $gte: new Date() }, // Ensure the coupon is not expired
       });
-      console.log(coupon);
       const product = await ProductDetailsModel.findOne({
         productId,
         _id: variationId,
       });
 
-      console.log(product);
       let discount = 0;
       let productPrice = Number(product.discountedPrice) * quantity;
       if (product && coupon) {
         if (coupon.type === "price") {
           discount = Number(productPrice) - Number(coupon.value);
-
-          console.log(discount);
         } else if (coupon.type === "discount" && coupon.upto == null) {
-          console.log("discountXXX", discount);
           discount = productPrice - (productPrice * coupon.value) / 100;
-          console.log("discountXXX", discount);
         } else if (coupon.type === "discount" && coupon.upto) {
           if (
             productPrice - (productPrice * coupon.value) / 100 >
             coupon.upto
           ) {
             discount = Number(coupon.upto);
-            console.log(discount);
           } else {
             discount = productPrice - (productPrice * coupon.value) / 100;
           }
@@ -68,7 +62,6 @@ class customerOrderController {
         discount = Math.max(0, discount);
       }
 
-      console.log("discount-->", discount);
       if (product) {
         // Respond with the calculated discounted price
         const order = await CusomerOrderModel.create({
@@ -99,6 +92,7 @@ class customerOrderController {
             area: addressArea,
           },
         });
+
         return res.status(200).json({
           message: "order created successfully.",
           status: 200,
@@ -131,7 +125,10 @@ class customerOrderController {
         .sort({ createdAt: -1 }); // Converts Mongoose documents to plain JavaScript objects
 
       const formattedOrders = orders.map((order) => ({
-        ...order,
+        discountedPrice: order.discountedPrice,
+        orderId: order._id,
+        quantity: order.quantity,
+        selectedSize: order.selectedSize,
         products: order.products.map((product) => ({
           productDetails: product.variationId, // Rename variationId to productDetails
           productId: product.productId,

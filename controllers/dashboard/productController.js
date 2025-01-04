@@ -28,7 +28,6 @@ class productController {
         size,
         ram,
         storage,
-
         free_delivery,
       } = field;
 
@@ -114,7 +113,7 @@ class productController {
           slug,
           brand: brand.trim(),
           description: description.trim(),
-
+          sellerId: id,
           ram: ram ? ram : "",
           storage: storage ? storage : "",
           price: parseInt(price),
