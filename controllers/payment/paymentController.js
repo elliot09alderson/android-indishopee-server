@@ -270,8 +270,15 @@ class paymentController {
     }, 120000); // 2 minutes
 
     responseReturn(res, 200, {
-      url: jsonData.upiIntent,
-      amount: jsonData.amount,
+      message: "payment url fetched",
+      status: 200,
+      data: {
+        qrCode: jsonData.upiIntent,
+        amount: jsonData.amount,
+        gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
+        phonePe: jsonData.upiIntent.replace("upi://", "phonepe://upi/"),
+        paytm: jsonData.upiIntent.replace("upi://", "paytm://upi/"),
+      },
     });
   };
 
