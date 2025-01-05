@@ -13,6 +13,12 @@ router.post(
 );
 router.post("/orders", customerMiddleware, customerOrderController.get_orders);
 router.post(
+  "/order/details/:orderId",
+  customerMiddleware,
+  customerOrderController.get_orderDetails
+);
+
+router.post(
   "/order/:id",
   customerMiddleware,
   customerOrderController.get_order

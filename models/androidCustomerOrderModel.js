@@ -27,6 +27,7 @@ const customerOrder = new Schema(
       type: String,
       required: true,
     },
+
     shippingInfo: {
       type: Object,
       required: true,
@@ -41,6 +42,9 @@ const customerOrder = new Schema(
       required: false,
     },
     transactionId: {
+      type: String,
+    },
+    transactionDate: {
       type: String,
     },
   },

@@ -28,13 +28,18 @@ class paymentController {
     const apiAESkey = process.env.payment_apiAESkey;
     const salt = apiSALTkey; // Salt Key
     const key = apiAESkey; // Encryption Key
-    const { orderId, price } = req.body;
+    const orderId = req.body.orderId;
+    const price = Number(req.body.price);
+    console.log(price);
     const currentUser = req.user;
 
     // console.log(orderId);
 
     const isAlreadyProcessed = await authOrder.findOne({ orderId });
     const myOrder = await androidCustomerOrderModel.findById(orderId);
+    if (!myOrder) {
+      responseReturn(res, 200, { message: "Order not found", status: 400 });
+    }
 
     if (
       !myOrder ||
@@ -342,33 +347,41 @@ class paymentController {
         if (status == 200) {
           console.log("success.......");
 
-          const updateOrderConfirmation = await authOrder.findOneAndUpdate(
-            {
-              orderId: udf1,
-            },
-            { payment_status: "paid", transactionId, date },
-            { new: true }
-          );
-          // console.log("updateOrderConfirmation", updateOrderConfirmation);
-          const updateCustomerOrderConfirmation =
-            await customerOrder.findByIdAndUpdate(
-              udf1,
+          // const updateOrderConfirmation = await authOrder.findOneAndUpdate(
+          //   {
+          //     orderId: udf1,
+          //   },
+          //   { payment_status: "paid", transactionId, date },
+          //   { new: true }
+          // );
 
-              { payment_status: "paid", transactionId, date },
+          const updateOrderConfirmation =
+            await androidCustomerOrderModel.findOneAndUpdate(
+              {
+                _id: udf1,
+              },
+              { payment_status: "paid", transactionId, transactionDate: date },
               { new: true }
             );
+          console.log("updateOrderConfirmation", updateOrderConfirmation);
+          // const updateCustomerOrderConfirmation =
+          //   await customerOrder.findByIdAndUpdate(
+          //     udf1,
+
+          //     { payment_status: "paid", transactionId, date },
+          //     { new: true }
+          //   );
 
           // __________________AFTER PAYMENT CONFIRMED DELETE THE ITEMS FROM CART ______
           // for (let k = 0; k < cardId.length; k++) {
           //   await cardModel.findByIdAndDelete(cardId[k]);
           // }
-          const savedCustomerDetails = await authOrder.findOne({
-            orderId: udf1,
-          });
-          return responseReturn(res, 201, {
+          // const savedCustomerDetails = await authOrder.findOne({
+          //   orderId: udf1,
+          // });
+          return responseReturn(res, 200, {
             message: "Payment confirmed",
-            order: updateOrderConfirmation,
-            updatedCustomerDetails: savedCustomerDetails,
+            status: 200,
           });
         }
 
@@ -466,7 +479,7 @@ class paymentController {
     return sum;
   };
 
-  get_seller_payemt_details = async (req, res) => {
+  get_seller_payment_details = async (req, res) => {
     const { sellerId } = req.params;
 
     try {
@@ -555,7 +568,7 @@ class paymentController {
     const { orderId } = req.params;
 
     try {
-      const order = await authOrder.findOne({ orderId });
+      const order = await androidCustomerOrderModel.findById(orderId);
 
       const email = req.user?.email;
 
@@ -563,7 +576,7 @@ class paymentController {
         try {
           await sendOrderConfirmationEmail(
             email,
-            "Order Confirmed Successfully",
+            "Order Placed Successfully",
             order.products,
             "./template/orderSuccess.handlebars"
           );
@@ -573,12 +586,16 @@ class paymentController {
       }
 
       if (order) {
-        responseReturn(res, 200, { payment_status: order.payment_status });
+        responseReturn(res, 200, {
+          message: "status fetched successfully",
+          status: 200,
+          payment_status: order.payment_status,
+        });
       } else {
-        responseReturn(res, 404, { message: "Order not found" });
+        responseReturn(res, 200, { message: "Order not found", status: 400 });
       }
     } catch (error) {
-      responseReturn(res, 500, { message: "Server error" });
+      responseReturn(res, 500, { message: error.message });
     }
   }
 

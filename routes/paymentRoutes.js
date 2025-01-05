@@ -19,7 +19,7 @@ router.post(
 );
 
 // _______________after payment__________________
-router.get(
+router.post(
   "/payment/status/:orderId",
   customerMiddleware,
   paymentController.get_payment_status
@@ -39,7 +39,7 @@ router.put(
 router.get(
   "/payment/seller-payment-details/:sellerId",
   authMiddleware,
-  paymentController.get_seller_payemt_details
+  paymentController.get_seller_payment_details
 );
 router.get(
   "/payment/request",

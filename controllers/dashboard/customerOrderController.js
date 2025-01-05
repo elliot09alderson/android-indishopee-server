@@ -1,3 +1,4 @@
+const androidCustomerOrderModel = require("../../models/androidCustomerOrderModel.js");
 const CusomerOrderModel = require("../../models/androidCustomerOrderModel.js");
 const authOrder = require("../../models/authOrder.js");
 const couponModel = require("../../models/couponModel.js");
@@ -39,6 +40,12 @@ class customerOrderController {
         productId,
         _id: variationId,
       });
+      if (product.size.indexOf(size)) {
+        responseReturn(res, 200, {
+          message: "size not available",
+          status: 400,
+        });
+      }
 
       let discount = 0;
       let productPrice = Number(product.discountedPrice) * quantity;
@@ -64,7 +71,7 @@ class customerOrderController {
 
       if (product) {
         // Respond with the calculated discounted price
-        const order = await CusomerOrderModel.create({
+        const order = await androidCustomerOrderModel.create({
           customerId: req.id,
           appliedCoupon: couponCode,
           payment_status: "pending",
@@ -116,7 +123,8 @@ class customerOrderController {
 
   get_orders = async (req, res) => {
     try {
-      const orders = await CusomerOrderModel.find()
+      const orders = await androidCustomerOrderModel
+        .find()
         .populate({
           path: "products.variationId",
           model: "variants",
@@ -151,7 +159,35 @@ class customerOrderController {
       });
     }
   };
-
+  get_orderDetails = async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      console.log(orderId);
+      const order = await androidCustomerOrderModel
+        .findById(orderId)
+        .populate({
+          path: "products.variationId",
+          model: "variants",
+        })
+        .lean()
+        .sort({ createdAt: -1 }); // Converts Mongoose documents to plain JavaScript objects
+      console.log(order);
+      const formattedOrders = {
+        ...order,
+      };
+      responseReturn(res, 200, {
+        orderDetails: formattedOrders,
+        message: "orders fetched successfully",
+        status: 200,
+      });
+    } catch (error) {
+      console.error("Error creating order for customer", error.message);
+      res.status(500).json({
+        message: "Internal server error.",
+        status: 500,
+      });
+    }
+  };
   get_order = async (req, res) => {
     const id = req.params.id;
     try {
