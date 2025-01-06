@@ -353,6 +353,7 @@ class categoryController {
                         input: "$$this",
                         as: "subcat",
                         in: {
+                          productType: "$$subcat.productType",
                           name: "$$subcat.name",
                           image: "$$subcat.image",
                           slug: "$$subcat.slug",
