@@ -250,7 +250,7 @@ class paymentController {
 
     const decryptedRESPONSE = await decrypt(encryptedRESPONSE.data, salt, key);
 
-    const jsonData = JSON.parse(decryptedRESPONSE);
+    const jsonData = await JSON.parse(decryptedRESPONSE);
 
     // console.log(jsonData);
     // async function runTaskForOrder(orderId) {
@@ -305,12 +305,12 @@ class paymentController {
       message: "payment url fetched",
       status: 200,
       data: {
-        qrCode: jsonData.upiIntent,
-        amount: jsonData.amount,
-        phonePe: convertUPIToIntent(jsonData.upiIntent, "phonepe://pay"),
+        qrCode: jsonData?.upiIntent,
+        amount: jsonData?.amount,
+        phonePe: convertUPIToIntent(jsonData?.upiIntent, "phonepe://pay"),
         // gPay: convertUPIToIntent(jsonData.upiIntent, "tez://pay"),
-        paytm: convertUPIToIntent(jsonData.upiIntent, "paytmmp://pay"),
-        gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
+        paytm: convertUPIToIntent(jsonData?.upiIntent, "paytmmp://pay"),
+        gPay: jsonData?.upiIntent?.replace("upi://", "tez://upi/"),
         // phonePe: jsonData.upiIntent.replace("upi://", "phonepe://upi/"),
         // paytm: jsonData.upiIntent.replace("upi://", "paytm://upi/"),
       },
