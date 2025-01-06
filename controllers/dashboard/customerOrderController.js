@@ -22,7 +22,7 @@ class customerOrderController {
         variationId,
         size,
       } = req.body;
-
+      console.log("body===>", req.body);
       if (!productId || !quantity) {
         return res.status(200).json({
           message: "Productid and quantity required.",
@@ -41,7 +41,7 @@ class customerOrderController {
         _id: variationId,
       });
       if (product.size.indexOf(size)) {
-        responseReturn(res, 200, {
+        return responseReturn(res, 200, {
           message: "size not available",
           status: 400,
         });
@@ -114,7 +114,7 @@ class customerOrderController {
       }
     } catch (error) {
       console.error("Error creating order for customer", error.message);
-      res.status(500).json({
+      return res.status(500).json({
         message: "Internal server error.",
         status: 500,
       });
