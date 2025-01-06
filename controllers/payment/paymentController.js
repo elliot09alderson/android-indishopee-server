@@ -30,12 +30,11 @@ class paymentController {
     const key = apiAESkey; // Encryption Key
     const orderId = req.body.orderId;
     const price = Number(req.body.price);
-    console.log(price);
     const currentUser = req.user;
 
     // console.log(orderId);
 
-    const isAlreadyProcessed = await authOrder.findOne({ orderId });
+    // const isAlreadyProcessed = await authOrder.findOne({ orderId });
     const myOrder = await androidCustomerOrderModel.findById(orderId);
     if (!myOrder) {
       responseReturn(res, 200, { message: "Order not found", status: 400 });
@@ -52,15 +51,15 @@ class paymentController {
       });
     }
     // console.log("isAlreadyProcessed--->", isAlreadyProcessed);
-    if (
-      isAlreadyProcessed?.payment_status === "failed" ||
-      isAlreadyProcessed?.payment_status === "paid"
-    ) {
-      return responseReturn(res, 401, {
-        url: null,
-        amount: null,
-      });
-    }
+    // if (
+    //   isAlreadyProcessed?.payment_status === "failed" ||
+    //   isAlreadyProcessed?.payment_status === "paid"
+    // ) {
+    //   return responseReturn(res, 401, {
+    //     url: null,
+    //     amount: null,
+    //   });
+    // }
 
     // const price = amount;
 
@@ -88,7 +87,7 @@ class paymentController {
       return signature;
     }
 
-    const phone = isAlreadyProcessed?.shippingInfo?.phone;
+    // const phone = isAlreadyProcessed?.shippingInfo?.phone;
 
     const key_id = clientId;
     const key_secret = apiSECRETkey;
@@ -96,7 +95,7 @@ class paymentController {
     const amount = price.toFixed(2);
     const name = currentUser.name || myOrder.shippingInfo.name;
     const email = currentUser.email || "pratikverma9691@gmail.com";
-    const mobile = phone || myOrder.shippingInfo.phonenumber.toString();
+    const mobile = myOrder.shippingInfo.phonenumber.toString();
 
     const signature = getSignature(
       key_id,
@@ -252,27 +251,27 @@ class paymentController {
     const jsonData = JSON.parse(decryptedRESPONSE);
 
     // console.log(jsonData);
-    async function runTaskForOrder(orderId) {
-      // console.log("timer played");
-      const updatedData = await authOrder.findOneAndUpdate(
-        { orderId },
-        { payment_status: "failed" },
-        { new: true }
-      );
-    }
+    // async function runTaskForOrder(orderId) {
+    //   // console.log("timer played");
+    //   const updatedData = await authOrder.findOneAndUpdate(
+    //     { orderId },
+    //     { payment_status: "failed" },
+    //     { new: true }
+    //   );
+    // }
 
-    setTimeout(async () => {
-      console.log("timer attached");
+    // setTimeout(async () => {
+    //   console.log("timer attached");
 
-      const order = await authOrder.findOne({ orderId });
+    //   const order = await authOrder.findOne({ orderId });
 
-      if (
-        order?.payment_status != "paid" &&
-        order?.payment_status != "failed"
-      ) {
-        runTaskForOrder(orderId);
-      }
-    }, 120000); // 2 minutes
+    //   if (
+    //     order?.payment_status != "paid" &&
+    //     order?.payment_status != "failed"
+    //   ) {
+    //     runTaskForOrder(orderId);
+    //   }
+    // }, 120000); // 2 minutes
     function convertUPIToIntent(inputUrl, baseUrl) {
       const params = new URLSearchParams(inputUrl.split("?")[1]);
 
@@ -307,9 +306,9 @@ class paymentController {
         qrCode: jsonData.upiIntent,
         amount: jsonData.amount,
         phonePe: convertUPIToIntent(jsonData.upiIntent, "phonepe://pay"),
-        gPay: convertUPIToIntent(jsonData.upiIntent, "tez://pay"),
+        // gPay: convertUPIToIntent(jsonData.upiIntent, "tez://pay"),
         paytm: convertUPIToIntent(jsonData.upiIntent, "paytmmp://pay"),
-        // gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
+        gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
         // phonePe: jsonData.upiIntent.replace("upi://", "phonepe://upi/"),
         // paytm: jsonData.upiIntent.replace("upi://", "paytm://upi/"),
       },
