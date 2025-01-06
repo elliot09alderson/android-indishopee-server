@@ -308,7 +308,7 @@ class paymentController {
         amount: jsonData.amount,
         phonePe: convertUPIToIntent(jsonData.upiIntent, "phonepe://pay"),
         gPay: convertUPIToIntent(jsonData.upiIntent, "tez://pay"),
-        paytm: convertUPIToIntent(jsonData.upiIntent, "paytm://pay"),
+        paytm: convertUPIToIntent(jsonData.upiIntent, "paytmmp://pay"),
         // gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
         // phonePe: jsonData.upiIntent.replace("upi://", "phonepe://upi/"),
         // paytm: jsonData.upiIntent.replace("upi://", "paytm://upi/"),
