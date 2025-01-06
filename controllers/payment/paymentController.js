@@ -29,6 +29,8 @@ class paymentController {
     const salt = apiSALTkey; // Salt Key
     const key = apiAESkey; // Encryption Key
     const orderId = req.body.orderId;
+
+    console.log("get hit ------->>>> ", req.body);
     const price = Number(req.body.price);
     const currentUser = req.user;
 
@@ -299,7 +301,7 @@ class paymentController {
 
       return `${baseUrl}?${outputParams.toString()}`;
     }
-    responseReturn(res, 200, {
+    return responseReturn(res, 200, {
       message: "payment url fetched",
       status: 200,
       data: {
