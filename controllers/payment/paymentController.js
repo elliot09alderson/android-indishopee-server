@@ -273,16 +273,45 @@ class paymentController {
         runTaskForOrder(orderId);
       }
     }, 120000); // 2 minutes
+    function convertUPIToIntent(inputUrl, baseUrl) {
+      const params = new URLSearchParams(inputUrl.split("?")[1]);
 
+      // Map input parameters to the desired format
+      const outputParams = new URLSearchParams();
+      outputParams.set("ver", "01"); // Version of the payment protocol
+      outputParams.set("mode", "22"); // Payment mode
+      outputParams.set("pa", params.get("pa")); // Payee address
+      outputParams.set("pn", params.get("pn")); // Payee name
+      outputParams.set("mc", params.get("mc")); // Merchant category code
+      outputParams.set("tr", params.get("tr")); // Transaction reference
+      outputParams.set("url", params.get("url") || ""); // URL
+      outputParams.set("tn", params.get("tn") || ""); // Transaction note
+      outputParams.set("am", params.get("am")); // Amount
+      outputParams.set("mam", params.get("am")); // Maximum amount, same as `am`
+      outputParams.set("mid", "MER0000000023361"); // Merchant ID (placeholder)
+      outputParams.set("qrMedium", "01"); // QR medium type
+      outputParams.set("tid", "SURFF6AB7BC508F4374AC81434D1FC5C40D"); // Transaction ID (placeholder)
+
+      // Generate timestamps
+      const currentDate = new Date();
+      const expireDate = new Date(currentDate.getTime() + 3 * 60 * 60 * 1000); // 3 hours from now
+      outputParams.set("QRts", currentDate.toISOString()); // Timestamp when the QR was generated
+      outputParams.set("QRexpire", expireDate.toISOString()); // Timestamp when the QR expires
+
+      return `${baseUrl}?${outputParams.toString()}`;
+    }
     responseReturn(res, 200, {
       message: "payment url fetched",
       status: 200,
       data: {
         qrCode: jsonData.upiIntent,
         amount: jsonData.amount,
-        gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
-        phonePe: jsonData.upiIntent.replace("upi://", "phonepe://upi/"),
-        paytm: jsonData.upiIntent.replace("upi://", "paytm://upi/"),
+        phonePe: convertUPIToIntent(jsonData.upiIntent, "phonepe://pay"),
+        gPay: convertUPIToIntent(jsonData.upiIntent, "tez://pay"),
+        paytm: convertUPIToIntent(jsonData.upiIntent, "paytm://pay"),
+        // gPay: jsonData.upiIntent.replace("upi://", "tez://upi/"),
+        // phonePe: jsonData.upiIntent.replace("upi://", "phonepe://upi/"),
+        // paytm: jsonData.upiIntent.replace("upi://", "paytm://upi/"),
       },
     });
   };

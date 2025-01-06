@@ -22,7 +22,6 @@ class customerOrderController {
         variationId,
         size,
       } = req.body;
-      console.log("body===>", req.body);
       if (!productId || !quantity) {
         return res.status(200).json({
           message: "Productid and quantity required.",
@@ -68,7 +67,6 @@ class customerOrderController {
         // Ensure the discounted price is not negative
         discount = Math.max(0, discount);
       }
-      console.log(addressPhonenumber);
       if (product) {
         // Respond with the calculated discounted price
         const order = await androidCustomerOrderModel.create({
@@ -99,7 +97,6 @@ class customerOrderController {
             area: addressArea,
           },
         });
-        console.log(order);
         return res.status(200).json({
           message: "order created successfully.",
           status: 200,
