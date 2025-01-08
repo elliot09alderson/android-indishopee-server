@@ -249,10 +249,10 @@ class paymentController {
     const encryptedRESPONSE = await sendRequest();
 
     const decryptedRESPONSE = await decrypt(encryptedRESPONSE.data, salt, key);
-
+    console.log("decryptedRESPONSE=>", decryptedRESPONSE);
     const jsonData = await JSON.parse(decryptedRESPONSE);
 
-    // console.log(jsonData);
+    console.log("JSON===^^^^^^", jsonData);
     // async function runTaskForOrder(orderId) {
     //   // console.log("timer played");
     //   const updatedData = await authOrder.findOneAndUpdate(
@@ -275,7 +275,7 @@ class paymentController {
     //   }
     // }, 120000); // 2 minutes
     function convertUPIToIntent(inputUrl, baseUrl) {
-      const params = new URLSearchParams(inputUrl.split("?")[1]);
+      const params = new URLSearchParams(inputUrl?.split("?")[1]);
 
       // Map input parameters to the desired format
       const outputParams = new URLSearchParams();

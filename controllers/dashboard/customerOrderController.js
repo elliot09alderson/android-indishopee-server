@@ -289,7 +289,7 @@ class customerOrderController {
           deliveryCharge: 0,
           listPrice:
             order.products[0].quantity * order.products[0]?.variationId?.price,
-          couponDiscount: order.couponDiscount,
+          extraDiscount: order.couponDiscount,
           price: order.price,
           discountedPrice: order.discountedPrice,
           payment_status: order.payment_status,
