@@ -7,11 +7,16 @@ const {
 } = require("mongoose");
 class cardController {
   add_to_card = async (req, res) => {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, variantId, size } = req.body;
     const userId = req.id;
     try {
       const product = await cardModel.findOne({
         $and: [
+          {
+            variantId: {
+              $eq: variantId,
+            },
+          },
           {
             productId: {
               $eq: productId,
@@ -34,6 +39,8 @@ class cardController {
           userId,
           productId,
           quantity,
+          variantId,
+          size,
         });
 
         responseReturn(res, 200, {
