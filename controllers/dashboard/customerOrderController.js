@@ -22,6 +22,21 @@ class customerOrderController {
         variationId,
         size,
       } = req.body;
+
+      console.log(
+        "data given by frontend===>",
+        couponCode,
+        productId,
+        quantity,
+        addressName,
+        addressPhonenumber,
+        addressCity,
+        addressState,
+        addressDistrict,
+        addressArea,
+        variationId,
+        size
+      );
       if (!productId || !quantity) {
         return res.status(200).json({
           message: "Productid and quantity required.",
