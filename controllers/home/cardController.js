@@ -58,7 +58,7 @@ class cardController {
   get_card_products = async (req, res) => {
     const co = 5;
     const userId = req.id;
-    console.log("heloo");
+
     try {
       const card_products = await cardModel.aggregate([
         {
@@ -77,6 +77,13 @@ class cardController {
           },
         },
       ]);
+      console.log(card_products);
+      if (card_products.length < 1) {
+        responseReturn(res, 200, {
+          message: "cart is empty ",
+          status: 200,
+        });
+      }
       // return res.json({ card_products });
       let buy_product_item = 0;
       let calculatePrice = 0;
@@ -158,8 +165,6 @@ class cardController {
         }
       }
 
-      // console.log("card_products===>", p);
-      console.log(card_products);
       responseReturn(res, 200, {
         data: {
           card_products: p,
