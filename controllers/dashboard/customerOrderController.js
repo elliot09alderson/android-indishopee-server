@@ -283,6 +283,12 @@ class customerOrderController {
         customerId: order.customerId,
         selectedSize: order.selectedSize,
         priceDetails: {
+          productListedPrice: order.products[0]?.variationId?.price,
+          sellingPrice: order.products[0]?.variationId?.discountedPrice,
+          itemCount: order.products[0].quantity,
+          deliveryCharge: 0,
+          listPrice:
+            order.products[0].quantity * order.products[0]?.variationId?.price,
           couponDiscount: order.couponDiscount,
           price: order.price,
           discountedPrice: order.discountedPrice,
