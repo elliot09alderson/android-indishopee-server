@@ -70,31 +70,35 @@ class cardController {
         },
         {
           $lookup: {
-            from: "products",
-            localField: "productId",
+            from: "variants",
+            localField: "variantId",
             foreignField: "_id",
             as: "products",
           },
         },
       ]);
-
+      // return res.json({ card_products });
       let buy_product_item = 0;
       let calculatePrice = 0;
       let card_product_count = 0;
       const outOfStockProduct = card_products.filter((p) => {
         p.products[0]?.stock < p.quantity;
       });
+
       for (let i = 0; i < outOfStockProduct.length; i++) {
         card_product_count = card_product_count + outOfStockProduct[i].quantity;
       }
       const stockProduct = card_products.filter(
         (p) => p.products[0].stock >= p.quantity
       );
+      console.log(stockProduct);
+      // return res.send(stockProduct);
       for (let i = 0; i < stockProduct.length; i++) {
         const { quantity } = stockProduct[i];
         card_product_count = card_product_count + quantity;
         buy_product_item = buy_product_item + quantity;
         const { price, discount } = stockProduct[i].products[0];
+        console.log(price, discount);
         if (discount !== 0) {
           calculatePrice =
             calculatePrice +
@@ -106,7 +110,7 @@ class cardController {
       console.log("calculatePrice===> ", calculatePrice);
       let p = [];
       let unique = [
-        ...new Set(stockProduct.map((p) => p.products[0].sellerId.toString())),
+        ...new Set(stockProduct.map((p) => p.products[0]?.sellerId.toString())),
       ];
 
       //_________ below lines creating the problem
@@ -377,52 +381,29 @@ class cardController {
    *
    */
 
-  add_to_card_android = async (req, res) => {
-    const { productId, quantity } = req.body;
-    const userId = req.id;
-    try {
-      const product = await cardModel.findOne({
-        $and: [
-          {
-            productId: {
-              $eq: productId,
-            },
-          },
-          {
-            userId: {
-              $eq: userId,
-            },
-          },
-        ],
-      });
-      if (product) {
-        responseReturn(res, 200, {
-          error: "Product already added to card",
-          status: 400,
-        });
-      } else {
-        const product = await cardModel.create({
-          userId,
-          productId,
-          quantity,
-        });
-
-        responseReturn(res, 200, {
-          message: "Add to card success",
-          product,
-          status: 200,
-        });
-      }
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
   get_card_products_android = async (req, res) => {
     const co = 5;
     const userId = req.id;
     console.log("heloo");
     try {
+      // const card_products = await cardModel.aggregate([
+      //   {
+      //     $match: {
+      //       userId: {
+      //         $eq: new ObjectId(userId),
+      //       },
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "products",
+      //       localField: "productId",
+      //       foreignField: "_id",
+      //       as: "products",
+      //     },
+      //   },
+      // ]);
+
       const card_products = await cardModel.aggregate([
         {
           $match: {
@@ -439,91 +420,29 @@ class cardController {
             as: "products",
           },
         },
+        {
+          $unwind: "$products", // Flatten the products array
+        },
+        {
+          $group: {
+            _id: null, // Group all documents together
+            products: { $push: "$products" }, // Collect all products into a single array
+          },
+        },
+        {
+          $project: {
+            _id: 0, // Remove the _id field from the result
+            products: 1, // Keep only the products array
+          },
+        },
       ]);
-      let buy_product_item = 0;
-      let calculatePrice = 0;
-      let card_product_count = 0;
-      const outOfStockProduct = card_products.filter((p) => {
-        p.products[0]?.stock < p.quantity;
-      });
-      for (let i = 0; i < outOfStockProduct.length; i++) {
-        card_product_count = card_product_count + outOfStockProduct[i].quantity;
-      }
-      const stockProduct = card_products.filter(
-        (p) => p.products[0].stock >= p.quantity
-      );
-      for (let i = 0; i < stockProduct.length; i++) {
-        const { quantity } = stockProduct[i];
-        card_product_count = card_product_count + quantity;
-        buy_product_item = buy_product_item + quantity;
-        const { price, discount } = stockProduct[i].products[0];
-        if (discount !== 0) {
-          calculatePrice =
-            calculatePrice +
-            quantity * (price - Math.floor((price * discount) / 100));
-        } else {
-          calculatePrice = calculatePrice + quantity * price;
-        }
-      }
-      console.log("calculatePrice===> ", calculatePrice);
-      let p = [];
-      let unique = [
-        ...new Set(stockProduct.map((p) => p.products[0].sellerId.toString())),
-      ];
 
-      //_________ below lines creating the problem
-      for (let i = 0; i < unique.length; i++) {
-        let price = 0;
-        for (let j = 0; j < stockProduct.length; j++) {
-          const tempProduct = stockProduct[j].products[0];
-          if (unique[i] === tempProduct.sellerId.toString()) {
-            let pri = 0;
-            if (tempProduct.discount !== 0) {
-              pri =
-                tempProduct.price -
-                Math.floor((tempProduct.price * tempProduct.discount) / 100);
-            } else {
-              pri = tempProduct.price;
-            }
-            pri = pri - Math.floor((pri * co) / 100);
-            price = price + pri * stockProduct[j].quantity;
-
-            console.log(price);
-            p[i] = {
-              sellerId: unique[i],
-              shopName: tempProduct.shopName,
-              // ___________i have changed below one line_________
-              price: calculatePrice,
-              products: p[i]
-                ? [
-                    ...p[i].products,
-                    {
-                      _id: stockProduct[j]._id,
-                      quantity: stockProduct[j].quantity,
-                      productInfo: tempProduct,
-                    },
-                  ]
-                : [
-                    {
-                      _id: stockProduct[j]._id,
-                      quantity: stockProduct[j].quantity,
-                      productInfo: tempProduct,
-                    },
-                  ],
-            };
-          }
-        }
-      }
+      console.log(card_products[0].products);
 
       // console.log("card_products===>", p);
       responseReturn(res, 200, {
         data: {
-          card_products: p,
-          price: calculatePrice,
-          card_product_count,
-          shipping_fee: 85 * p.length,
-          outOfStockProduct,
-          buy_product_item,
+          card_products,
         },
         status: 200,
         message: "cart items fetched successfully",

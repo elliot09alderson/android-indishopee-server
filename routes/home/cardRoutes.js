@@ -12,6 +12,11 @@ router.get(
   customerMiddleware,
   cardController.get_card_products
 );
+router.get(
+  "/home/product/get-card-product-android",
+  customerMiddleware,
+  cardController.get_card_products_android
+);
 router.delete(
   "/home/product/delete-all-cart-product",
   customerMiddleware,
