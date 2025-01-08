@@ -97,6 +97,8 @@ class customerOrderController {
             area: addressArea,
           },
         });
+
+        console.log("craeted order === > ", order);
         return res.status(200).json({
           message: "order created successfully.",
           status: 200,
