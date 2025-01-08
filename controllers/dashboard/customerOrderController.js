@@ -117,7 +117,116 @@ class customerOrderController {
       });
     }
   };
+  create_cart_order = async (req, res) => {
+    try {
+      const {
+        couponCode,
+        productId,
+        quantity,
+        addressName,
+        addressPhonenumber,
+        addressCity,
+        addressState,
+        addressDistrict,
+        addressArea,
+        variationId,
+        size,
+      } = req.body;
+      if (!productId || !quantity) {
+        return res.status(200).json({
+          message: "Productid and quantity required.",
+          status: 400,
+        });
+      }
 
+      // Check if the coupon exists and is active
+      const coupon = await couponModel.findOne({
+        code: couponCode,
+        isActive: true,
+        expiryDate: { $gte: new Date() }, // Ensure the coupon is not expired
+      });
+      const product = await ProductDetailsModel.findOne({
+        productId,
+        _id: variationId,
+      });
+      if (product.size.indexOf(size)) {
+        return responseReturn(res, 200, {
+          message: "size not available",
+          status: 400,
+        });
+      }
+
+      let discount = 0;
+      let productPrice = Number(product.discountedPrice) * quantity;
+      if (product && coupon) {
+        if (coupon.type === "price") {
+          discount = Number(productPrice) - Number(coupon.value);
+        } else if (coupon.type === "discount" && coupon.upto == null) {
+          discount = productPrice - (productPrice * coupon.value) / 100;
+        } else if (coupon.type === "discount" && coupon.upto) {
+          if (
+            productPrice - (productPrice * coupon.value) / 100 >
+            coupon.upto
+          ) {
+            discount = Number(coupon.upto);
+          } else {
+            discount = productPrice - (productPrice * coupon.value) / 100;
+          }
+        }
+
+        // Ensure the discounted price is not negative
+        discount = Math.max(0, discount);
+      }
+      if (product) {
+        // Respond with the calculated discounted price
+        const order = await androidCustomerOrderModel.create({
+          customerId: req.id,
+          appliedCoupon: couponCode,
+          payment_status: "pending",
+          discountedPrice: productPrice - discount,
+          price: productPrice,
+          couponDiscount: Number(discount),
+          selectedSize: size,
+          products: [
+            {
+              productId,
+              quantity,
+              variationId,
+              couponDiscount: discount,
+              price: productPrice,
+              discountedPrice: productPrice - discount,
+              size,
+            },
+          ],
+          shippingInfo: {
+            name: addressName,
+            phonenumber: addressPhonenumber,
+            city: addressCity,
+            state: addressState,
+            district: addressDistrict,
+            area: addressArea,
+          },
+        });
+        return res.status(200).json({
+          message: "order created successfully.",
+          status: 200,
+          order,
+        });
+      } else {
+        return res.status(200).json({
+          message: "invalid productId or vairantId",
+          status: 400,
+        });
+        console.log("invalid productId or vairantId");
+      }
+    } catch (error) {
+      console.error("Error creating order for customer", error.message);
+      return res.status(500).json({
+        message: "Internal server error.",
+        status: 500,
+      });
+    }
+  };
   get_orders = async (req, res) => {
     try {
       const orders = await androidCustomerOrderModel
@@ -159,7 +268,7 @@ class customerOrderController {
   get_orderDetails = async (req, res) => {
     try {
       const { orderId } = req.params;
-      console.log(orderId);
+
       const order = await androidCustomerOrderModel
         .findById(orderId)
         .populate({
@@ -168,9 +277,21 @@ class customerOrderController {
         })
         .lean()
         .sort({ createdAt: -1 }); // Converts Mongoose documents to plain JavaScript objects
-      console.log(order);
+
       const formattedOrders = {
-        ...order,
+        _id: order._id,
+        customerId: order.customerId,
+        selectedSize: order.selectedSize,
+        priceDetails: {
+          couponDiscount: order.couponDiscount,
+          price: order.price,
+          discountedPrice: order.discountedPrice,
+          payment_status: order.payment_status,
+          appliedCoupon: order.appliedCoupon,
+        },
+        shippingInfo: order.shippingInfo,
+
+        products: order.products,
       };
       responseReturn(res, 200, {
         orderDetails: formattedOrders,

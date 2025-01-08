@@ -70,6 +70,7 @@ class cardController {
           },
         },
       ]);
+
       let buy_product_item = 0;
       let calculatePrice = 0;
       let card_product_count = 0;
@@ -124,6 +125,7 @@ class cardController {
               shopName: tempProduct.shopName,
               // ___________i have changed below one line_________
               price: calculatePrice,
+
               products: p[i]
                 ? [
                     ...p[i].products,
@@ -146,12 +148,14 @@ class cardController {
       }
 
       // console.log("card_products===>", p);
+      console.log(card_products);
       responseReturn(res, 200, {
         data: {
           card_products: p,
+          cartId: card_products[0]._id,
           price: calculatePrice,
           card_product_count,
-          shipping_fee: 85 * p.length,
+          // shipping_fee: 85 * p.length,
           outOfStockProduct,
           buy_product_item,
         },

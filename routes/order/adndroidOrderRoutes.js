@@ -29,5 +29,10 @@ router.delete(
   customerMiddleware,
   customerOrderController.delete_order
 );
+router.post(
+  "/order/cart",
+  customerMiddleware,
+  customerOrderController.create_cart_order
+);
 
 module.exports = router;
