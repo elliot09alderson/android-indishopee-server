@@ -64,8 +64,9 @@ class customerOrderController {
       let discount = 0;
       let productPrice = Number(product.discountedPrice) * quantity;
       if (product && coupon) {
+        console.log(coupon.type);
         if (coupon.type === "price") {
-          discount = Number(productPrice) - Number(coupon.value);
+          discount = Number(coupon.value);
         } else if (coupon.type === "discount" && coupon.upto == null) {
           discount = productPrice - (productPrice * coupon.value) / 100;
         } else if (coupon.type === "discount" && coupon.upto) {
