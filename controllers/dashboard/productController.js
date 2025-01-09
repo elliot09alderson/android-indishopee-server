@@ -274,6 +274,11 @@ class productController {
 
   addVariants = async (req, res) => {
     const { productId } = req.params;
+
+    const baseProduct = await productModel.findById(productId);
+    if (!baseProduct) {
+      responseReturn(res, 400, { message: "product not found", status: 400 });
+    }
     const form = formidable({ multiples: true });
     console.log("data reached");
     form.parse(req, async (err, field, files) => {
@@ -340,7 +345,12 @@ class productController {
           size: size ? size : "",
           stock,
           colorName,
+          brand: baseProduct.brand,
           discount,
+          description: baseProduct.description,
+          slug: baseProduct.slug,
+          sellerId: baseProduct.sellerId,
+          name: baseProduct.name,
           discountedPrice,
           images: allImageUrl,
         });

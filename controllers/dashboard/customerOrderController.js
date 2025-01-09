@@ -1,14 +1,18 @@
 const androidCustomerOrderModel = require("../../models/androidCustomerOrderModel.js");
 const CusomerOrderModel = require("../../models/androidCustomerOrderModel.js");
 const authOrder = require("../../models/authOrder.js");
+const cardModel = require("../../models/cardModel.js");
 const couponModel = require("../../models/couponModel.js");
 const ProductDetailsModel = require("../../models/productDetailsModel.js");
 const productModel = require("../../models/productModel.js");
 const { responseReturn } = require("../../utiles/response.js");
+const { Types } = require("mongoose");
+const ObjectId = Types.ObjectId;
 const moment = require("moment");
 class customerOrderController {
   create_order = async (req, res) => {
     try {
+      console.log("Create order hitted");
       const {
         couponCode,
         productId,
@@ -137,24 +141,79 @@ class customerOrderController {
   };
   create_cart_order = async (req, res) => {
     try {
+      let buy_product_item = 0;
+      let calculatePrice = 0;
+      let card_product_count = 0;
+      const userId = req.id;
+      console.log("userId--->", userId);
       const {
         couponCode,
-        productId,
-        quantity,
         addressName,
         addressPhonenumber,
         addressCity,
         addressState,
         addressDistrict,
         addressArea,
-        variationId,
-        size,
       } = req.body;
-      if (!productId || !quantity) {
-        return res.status(200).json({
-          message: "Productid and quantity required.",
-          status: 400,
+
+      try {
+        const card_products = await cardModel.aggregate([
+          {
+            $match: {
+              userId: {
+                $eq: new ObjectId(userId),
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "variants",
+              localField: "variantId",
+              foreignField: "_id",
+              as: "products",
+            },
+          },
+        ]);
+
+        console.log(">>>>>>>>>>", userId);
+        if (card_products.length < 1) {
+          responseReturn(res, 200, {
+            message: "cart is empty ",
+            status: 200,
+          });
+        }
+        // return res.json({ card_products });
+
+        const outOfStockProduct = card_products.filter((p) => {
+          p.products[0]?.stock < p.quantity;
         });
+
+        for (let i = 0; i < outOfStockProduct.length; i++) {
+          card_product_count =
+            card_product_count + outOfStockProduct[i].quantity;
+        }
+        const stockProduct = card_products.filter(
+          (p) => p.products[0].stock >= p.quantity
+        );
+
+        // return res.send(stockProduct);
+        for (let i = 0; i < stockProduct.length; i++) {
+          const { quantity } = stockProduct[i];
+          card_product_count = card_product_count + quantity;
+          buy_product_item = buy_product_item + quantity;
+          const { price, discount } = stockProduct[i].products[0];
+          console.log(price, discount);
+          if (discount !== 0) {
+            calculatePrice =
+              calculatePrice +
+              quantity * (price - Math.floor((price * discount) / 100));
+          } else {
+            calculatePrice = calculatePrice + quantity * price;
+          }
+        }
+        console.log("calculatePrice===> ", calculatePrice);
+      } catch (error) {
+        console.log(error.message);
       }
 
       // Check if the coupon exists and is active
@@ -163,22 +222,15 @@ class customerOrderController {
         isActive: true,
         expiryDate: { $gte: new Date() }, // Ensure the coupon is not expired
       });
-      const product = await ProductDetailsModel.findOne({
-        productId,
-        _id: variationId,
-      });
-      if (product.size.indexOf(size)) {
-        return responseReturn(res, 200, {
-          message: "size not available",
-          status: 400,
-        });
-      }
 
       let discount = 0;
-      let productPrice = Number(product.discountedPrice) * quantity;
-      if (product && coupon) {
+      let productPrice = calculatePrice;
+      console.log("productPrice", productPrice);
+      if (card_product_count && coupon) {
         if (coupon.type === "price") {
-          discount = Number(productPrice) - Number(coupon.value);
+          console.log("subtracting price");
+          discount = Number(coupon.value);
+          console.log("discount price", discount);
         } else if (coupon.type === "discount" && coupon.upto == null) {
           discount = productPrice - (productPrice * coupon.value) / 100;
         } else if (coupon.type === "discount" && coupon.upto) {
@@ -195,48 +247,43 @@ class customerOrderController {
         // Ensure the discounted price is not negative
         discount = Math.max(0, discount);
       }
-      if (product) {
-        // Respond with the calculated discounted price
-        const order = await androidCustomerOrderModel.create({
-          customerId: req.id,
-          appliedCoupon: couponCode,
-          payment_status: "pending",
-          discountedPrice: productPrice - discount,
-          price: productPrice,
-          couponDiscount: Number(discount),
-          selectedSize: size,
-          products: [
-            {
-              productId,
-              quantity,
-              variationId,
-              couponDiscount: discount,
-              price: productPrice,
-              discountedPrice: productPrice - discount,
-              size,
-            },
-          ],
-          shippingInfo: {
-            name: addressName,
-            phonenumber: addressPhonenumber,
-            city: addressCity,
-            state: addressState,
-            district: addressDistrict,
-            area: addressArea,
-          },
-        });
-        return res.status(200).json({
-          message: "order created successfully.",
-          status: 200,
-          order,
-        });
-      } else {
-        return res.status(200).json({
-          message: "invalid productId or vairantId",
-          status: 400,
-        });
-        console.log("invalid productId or vairantId");
-      }
+      console.log("discount", discount);
+      // Respond with the calculated discounted price
+
+      console.log("creating order.....");
+      const order = await androidCustomerOrderModel.create({
+        customerId: req.id,
+        appliedCoupon: couponCode,
+        payment_status: "pending",
+        discountedPrice: productPrice - discount,
+        price: productPrice,
+        couponDiscount: Number(discount),
+
+        // products: [
+        //   {
+        //     productId,
+        //     quantity,
+        //     variationId,
+        //     couponDiscount: discount,
+        //     price: productPrice,
+        //     discountedPrice: productPrice - discount,
+        //     size,
+        //   },
+        // ],
+        shippingInfo: {
+          name: addressName,
+          phonenumber: addressPhonenumber,
+          city: addressCity,
+          state: addressState,
+          district: addressDistrict,
+          area: addressArea,
+        },
+      });
+      return res.status(200).json({
+        message: "order created successfully.",
+        status: 200,
+        order,
+      });
     } catch (error) {
       console.error("Error creating order for customer", error.message);
       return res.status(500).json({

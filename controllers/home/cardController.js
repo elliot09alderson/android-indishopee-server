@@ -1,4 +1,5 @@
 const cardModel = require("../../models/cardModel");
+const ProductDetailsModel = require("../../models/productDetailsModel");
 const productModel = require("../../models/productModel");
 const wishlistModel = require("../../models/wishlistModel");
 const { responseReturn } = require("../../utiles/response");
@@ -29,6 +30,17 @@ class cardController {
           },
         ],
       });
+
+      const myProduct = await ProductDetailsModel.findOne({
+        productId,
+        _id: variantId,
+      });
+      if (myProduct.size.indexOf(size)) {
+        return responseReturn(res, 200, {
+          message: "size not available",
+          status: 400,
+        });
+      }
       if (product) {
         responseReturn(res, 200, {
           error: "Product already added to card",
@@ -77,7 +89,7 @@ class cardController {
           },
         },
       ]);
-      console.log(card_products);
+
       if (card_products.length < 1) {
         responseReturn(res, 200, {
           message: "cart is empty ",

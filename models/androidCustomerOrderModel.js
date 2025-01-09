@@ -11,7 +11,7 @@ const customerOrder = new Schema(
     couponDiscount: { type: Number },
     products: {
       type: Array,
-      required: true,
+      // required: true,
     },
     price: {
       type: Number,

@@ -30,7 +30,7 @@ router.delete(
   customerOrderController.delete_order
 );
 router.post(
-  "/order/cart",
+  "/order/cart/android",
   customerMiddleware,
   customerOrderController.create_cart_order
 );
