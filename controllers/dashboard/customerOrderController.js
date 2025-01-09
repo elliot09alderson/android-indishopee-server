@@ -252,7 +252,7 @@ class customerOrderController {
 
       console.log("creating order.....");
       const order = await androidCustomerOrderModel.create({
-        customerId: req.id,
+        customerId: new ObjectId(req.id),
         appliedCoupon: couponCode,
         payment_status: "pending",
         discountedPrice: productPrice - discount,

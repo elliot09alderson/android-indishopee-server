@@ -209,7 +209,28 @@ class productController {
       console.log(error.message);
     }
   };
+related_products = async(req,res)=>{
+ 
+  const { id } = req;
 
+
+
+  try {
+    if (searchValue) {
+  
+      const products = await productModel
+        .find({  })
+        .limit(10)
+        .sort({ createdAt: -1 });
+      const totalProduct = await productModel
+        .find({ sellerId: id })
+        .countDocuments();
+      responseReturn(res, 200, { totalProduct, products });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+}
   //   -------------------------------
   product_update = async (req, res) => {
     let { name, description, discount, price, brand, productId, stock } =
