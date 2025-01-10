@@ -43,21 +43,15 @@ const productDetailsSchema = new Schema(
     },
     size: {
       type: String, // For clothes (e.g., 'S', 'M', 'L')
-      required: function () {
-        return this.type === "clothes" || this.type === "shoes";
-      },
+      default: null,
     },
     ram: {
       type: String, // For electronics (e.g., '6GB', '8GB')
-      required: function () {
-        return this.type === "phones";
-      },
+      default: null,
     },
     storage: {
       type: String, // For electronics (e.g., '128GB', '256GB')
-      required: function () {
-        return this.type === "phones";
-      },
+      default: null,
     },
     price: {
       type: Number,
