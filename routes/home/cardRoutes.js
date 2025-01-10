@@ -55,7 +55,7 @@ router.delete(
 );
 
 router.delete(
-  "/home/product/delete-wishlist-product/:wishlistId",
+  "/home/product/delete-wishlist-product/:productId",
   customerMiddleware,
   cardController.delete_wishlist_product
 );
