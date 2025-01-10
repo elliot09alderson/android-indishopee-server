@@ -9,6 +9,7 @@ const {
 class cardController {
   add_to_card = async (req, res) => {
     const { productId, quantity, variantId, size } = req.body;
+    console.log(req.body);
     const userId = req.id;
     try {
       const product = await cardModel.findOne({
@@ -32,10 +33,10 @@ class cardController {
       });
 
       const myProduct = await ProductDetailsModel.findOne({
-        productId,
-        _id: variantId,
+        $and: [{ productId: productId }, { _id: variantId }],
       });
-      if (myProduct.size.indexOf(size)) {
+
+      if (!myProduct.size.indexOf(size)) {
         return responseReturn(res, 200, {
           message: "size not available",
           status: 400,
@@ -89,6 +90,8 @@ class cardController {
           },
         },
       ]);
+
+      console.log(card_products);
 
       if (card_products.length < 1) {
         responseReturn(res, 200, {
@@ -149,7 +152,7 @@ class cardController {
             pri = pri - Math.floor((pri * co) / 100);
             price = price + pri * stockProduct[j].quantity;
 
-            console.log(price);
+            console.log("stockProduct", stockProduct[j]);
             p[i] = {
               sellerId: unique[i],
               shopName: tempProduct.shopName,
@@ -162,14 +165,20 @@ class cardController {
                     {
                       _id: stockProduct[j]._id,
                       quantity: stockProduct[j].quantity,
-                      productInfo: tempProduct,
+                      productInfo: {
+                        ...tempProduct,
+                        size: stockProduct[j].size,
+                      },
                     },
                   ]
                 : [
                     {
                       _id: stockProduct[j]._id,
                       quantity: stockProduct[j].quantity,
-                      productInfo: tempProduct,
+                      productInfo: {
+                        ...tempProduct,
+                        size: stockProduct[j].size,
+                      },
                     },
                   ],
             };

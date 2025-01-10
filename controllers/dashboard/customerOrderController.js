@@ -175,6 +175,8 @@ class customerOrderController {
           },
         ]);
 
+        // console.log("card_products", card_products);
+        // return res.send(card_products);
         console.log(">>>>>>>>>>", userId);
         if (card_products.length < 1) {
           responseReturn(res, 200, {
@@ -199,6 +201,8 @@ class customerOrderController {
         // return res.send(stockProduct);
         for (let i = 0; i < stockProduct.length; i++) {
           const { quantity } = stockProduct[i];
+
+          console.log("quantity---->", quantity);
           card_product_count = card_product_count + quantity;
           buy_product_item = buy_product_item + quantity;
           const { price, discount } = stockProduct[i].products[0];
@@ -247,7 +251,8 @@ class customerOrderController {
         // Ensure the discounted price is not negative
         discount = Math.max(0, discount);
       }
-      console.log("discount", discount);
+
+      console.log("discount, productPrice", discount, productPrice);
       // Respond with the calculated discounted price
 
       console.log("creating order.....");
