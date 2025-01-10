@@ -289,37 +289,38 @@ class cardController {
     try {
       const product = await wishlistModel.findOne({
         userId,
+        slug,
       });
-
+      const myProduct = await productModel.findOne({
+        slug,
+      });
       if (product) {
         responseReturn(res, 200, {
           message: "item Allready added",
           status: 400,
         });
       } else {
-        const product = await productModel.findOne({ slug });
-
-        if (!product) {
-        } else {
+        if (!myProduct) {
           responseReturn(res, 200, {
-            message: "product not found ",
-            status: 400,
+            message: "item not found",
+            status: 404,
           });
         }
-        await wishlistModel.create({
+
+        const wishlist = await wishlistModel.create({
           userId: req.id,
-          productId: product._id,
-          name: product.name,
+          productId: myProduct._id,
+          name: myProduct.name,
           slug,
 
-          price: product.price,
-          discount: product.discount,
-          image: product?.images[0],
-          rating: product.rating,
+          price: myProduct.price,
+          discount: myProduct.discount,
+          image: myProduct?.images[0],
+          rating: myProduct.rating,
         });
         responseReturn(res, 200, {
           message: "add to wishlist success",
-
+          wishlist,
           status: 200,
         });
       }
