@@ -58,7 +58,7 @@ class customerOrderController {
         productId,
         _id: variationId,
       });
-      if (product.size.indexOf(size)) {
+      if (product.size.indexOf(size) == -1) {
         return responseReturn(res, 200, {
           message: "size not available",
           status: 400,

@@ -36,7 +36,9 @@ class cardController {
         $and: [{ productId: productId }, { _id: variantId }],
       });
 
-      if (!myProduct.size.indexOf(size)) {
+      // console.log(myProduct);
+
+      if (myProduct.size.indexOf(size) == -1) {
         return responseReturn(res, 200, {
           message: "size not available",
           status: 400,
