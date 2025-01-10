@@ -373,11 +373,11 @@ class cardController {
   };
 
   delete_wishlist_product = async (req, res) => {
-    const { productId } = req.params;
+    const { wishlistId } = req.params;
     const userId = req.id;
     try {
       const wishlist = await wishlistModel.findOneAndDelete(
-        { userId, productId },
+        { _id: wishlistId },
         {
           new: true,
         }
@@ -385,14 +385,14 @@ class cardController {
       if (wishlist) {
         responseReturn(res, 200, {
           message: "Remove success",
-          data: productId,
+          data: wishlistId,
           status: 200,
         });
       } else {
         responseReturn(res, 200, {
           message: "product is already removed ",
           status: 200,
-          data: productId,
+          data: wishlistId,
         });
       }
     } catch (error) {
