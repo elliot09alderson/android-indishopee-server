@@ -9,6 +9,12 @@ router.get(
   authMiddleware,
   productController.product_get
 );
+router.get(
+  "/related-product-get/:productId",
+
+  productController.related_products
+);
+
 router.delete(
   "/product-delete/:productId",
   authMiddleware,

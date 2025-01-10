@@ -209,28 +209,39 @@ class productController {
       console.log(error.message);
     }
   };
-related_products = async(req,res)=>{
- 
-  const { id } = req;
+  related_products = async (req, res) => {
+    const { productId } = req.params; 
+    console.log(productId);
 
+    try {
+      const myProduct = await productModel.findById(productId);
 
+      if (myProduct) {
+        const products = await productModel
+          .find({
+            $or: [
+              { type: myProduct.type },
+              { category: myProduct.category },
+              { subcategory: myProduct.subcategory },
+            ],
+          })
+          .limit(10)
+          .sort({ createdAt: -1 });
 
-  try {
-    if (searchValue) {
-  
-      const products = await productModel
-        .find({  })
-        .limit(10)
-        .sort({ createdAt: -1 });
-      const totalProduct = await productModel
-        .find({ sellerId: id })
-        .countDocuments();
-      responseReturn(res, 200, { totalProduct, products });
+        responseReturn(res, 200, {
+          products,
+          message: "products fetched successfully",
+          status: 200,
+        });
+      }
+       responseReturn(res, 200, {
+         message: "products not find",
+         status: 401,
+       });
+    } catch (error) {
+      console.log(error.message);
     }
-  } catch (error) {
-    console.log(error.message);
-  }
-}
+  };
   //   -------------------------------
   product_update = async (req, res) => {
     let { name, description, discount, price, brand, productId, stock } =
