@@ -6,11 +6,7 @@ const wishlistSchema = new Schema(
       type: String,
       required: true,
     },
-    variationId: {
-      type: String,
-      required: true,
-    },
-    size: { type: String, required: false },
+
     productId: {
       type: String,
       required: true,

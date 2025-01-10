@@ -281,14 +281,12 @@ class cardController {
    *              @WISHLIST
    */
   add_wishlist = async (req, res) => {
-    const { slug, variationId, size } = req.body;
+    const { slug } = req.body;
 
     const userId = req.id;
     try {
       const product = await wishlistModel.findOne({
         userId,
-        slug,
-        variationId,
       });
 
       if (product) {
@@ -299,13 +297,6 @@ class cardController {
       } else {
         const product = await productModel.findOne({ slug });
 
-        if (size && !product.size.indexOf(size)) {
-        } else {
-          responseReturn(res, 200, {
-            message: "product not found with this size",
-            status: 400,
-          });
-        }
         if (!product) {
         } else {
           responseReturn(res, 200, {
@@ -318,8 +309,7 @@ class cardController {
           productId: product._id,
           name: product.name,
           slug,
-          variationId,
-          size,
+
           price: product.price,
           discount: product.discount,
           image: product?.images[0],
