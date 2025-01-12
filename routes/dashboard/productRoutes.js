@@ -9,6 +9,8 @@ router.get(
   authMiddleware,
   productController.product_get
 );
+router.get("/product-detail", productController.product_detail);
+
 router.get(
   "/related-product-get/:productId",
 

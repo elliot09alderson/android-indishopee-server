@@ -338,7 +338,7 @@ class categoryController {
         },
         {
           $project: {
-            _id: 0, // Exclude the MongoDB _id field
+            _id: 1, // Exclude the MongoDB _id field
             categoryName: 1,
 
             subcategories: {

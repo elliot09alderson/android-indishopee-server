@@ -41,7 +41,7 @@ class customerOrderController {
         variationId,
         size
       );
-      if (!productId || !quantity) {
+      if (!productId || !quantity || !variationId) {
         return res.status(200).json({
           message: "Productid and quantity required.",
           status: 400,

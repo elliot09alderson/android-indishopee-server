@@ -209,8 +209,44 @@ class productController {
       console.log(error.message);
     }
   };
+
+  product_detail = async (req, res) => {
+    try {
+      const { variantId, size } = req.body;
+
+      // Find the document by variantId and size
+      const variant = await ProductDetailsModel.findOne({
+        _id: variantId,
+        size: { $regex: new RegExp(`\\b${size}\\b`, "i") }, // Match size in the string
+      });
+
+      if (!variant) {
+        return res
+          .status(404)
+          .json({ message: "Variant not found", status: 400 });
+      }
+
+      // Modify the output object to replace the size field
+      const modifiedVariant = {
+        ...variant.toObject(), // Convert Mongoose document to plain object
+        size, // Replace size field with the given size
+      };
+
+      return res.status(200).json({
+        message: "product details fetched",
+        product: modifiedVariant,
+        status: 200,
+      });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error", error, status: 400 });
+    }
+  };
+
   related_products = async (req, res) => {
-    const { productId } = req.params; 
+    const { productId } = req.params;
     console.log(productId);
 
     try {
@@ -234,10 +270,10 @@ class productController {
           status: 200,
         });
       }
-       responseReturn(res, 200, {
-         message: "products not find",
-         status: 401,
-       });
+      responseReturn(res, 200, {
+        message: "products not find",
+        status: 401,
+      });
     } catch (error) {
       console.log(error.message);
     }
