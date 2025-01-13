@@ -33,7 +33,7 @@ class cardController {
         ],
       });
       if (product) {
-        responseReturn(res, 200, {
+        return responseReturn(res, 200, {
           error: "Product already added to card",
           status: 400,
         });
