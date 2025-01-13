@@ -234,7 +234,14 @@ class productController {
 
       return res.status(200).json({
         message: "product details fetched",
-        product: modifiedVariant,
+        product: {
+          product: modifiedVariant,
+          priceDetails: {
+            listedPrice: modifiedVariant.price,
+            discount: modifiedVariant.discount,
+            offerPrice: modifiedVariant.discountedPrice,
+          },
+        },
         status: 200,
       });
     } catch (error) {
@@ -532,7 +539,7 @@ class productController {
     }
   };
 
-  /**
+  /**`
    *
    * @ANDROID
    *

@@ -8,7 +8,7 @@ router.post(
   cardController.add_to_card
 );
 router.get(
-  "/home/product/get-card-product",
+  "/home/product/get-cart-product",
   customerMiddleware,
   cardController.get_card_products
 );

@@ -58,6 +58,7 @@ class customerOrderController {
         productId,
         _id: variationId,
       });
+
       if (product.size.indexOf(size) == -1) {
         return responseReturn(res, 200, {
           message: "size not available",
@@ -347,7 +348,9 @@ class customerOrderController {
         })
         .lean()
         .sort({ createdAt: -1 }); // Converts Mongoose documents to plain JavaScript objects
-
+      if (!order) {
+        responseReturn(res, 200, { message: "no order found ", status: 400 });
+      }
       const formattedOrders = {
         _id: order._id,
         customerId: order.customerId,
