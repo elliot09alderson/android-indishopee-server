@@ -235,7 +235,7 @@ class productController {
       return res.status(200).json({
         message: "product details fetched",
         product: {
-          product: modifiedVariant,
+          productDetails: modifiedVariant,
           priceDetails: {
             listedPrice: modifiedVariant.price,
             discount: modifiedVariant.discount,
