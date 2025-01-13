@@ -1,6 +1,7 @@
 const cardModel = require("../../models/cardModel");
 const ProductDetailsModel = require("../../models/productDetailsModel");
 const productModel = require("../../models/productModel");
+const saveListModel = require("../../models/saveListModel");
 const wishlistModel = require("../../models/wishlistModel");
 const { responseReturn } = require("../../utiles/response");
 const {
@@ -31,11 +32,21 @@ class cardController {
           },
         ],
       });
-
+      if (product) {
+        responseReturn(res, 200, {
+          error: "Product already added to card",
+          status: 400,
+        });
+      }
       const myProduct = await ProductDetailsModel.findOne({
         $and: [{ productId: productId }, { _id: variantId }],
       });
-
+      if (!myProduct) {
+        responseReturn(res, 200, {
+          message: "product not found ",
+          status: 404,
+        });
+      }
       // console.log(myProduct);
 
       if (myProduct.size.indexOf(size) == -1) {
@@ -44,26 +55,20 @@ class cardController {
           status: 400,
         });
       }
-      if (product) {
-        responseReturn(res, 200, {
-          error: "Product already added to card",
-          status: 400,
-        });
-      } else {
-        const product = await cardModel.create({
-          userId,
-          productId,
-          quantity,
-          variantId,
-          size,
-        });
 
-        responseReturn(res, 200, {
-          message: "Add to card success",
-          product,
-          status: 200,
-        });
-      }
+      const createdCart = await cardModel.create({
+        userId,
+        productId,
+        quantity,
+        variantId,
+        size,
+      });
+
+      responseReturn(res, 200, {
+        message: "Add to card success",
+        cart: createdCart,
+        status: 200,
+      });
     } catch (error) {
       console.log(error.message);
     }
@@ -417,24 +422,6 @@ class cardController {
     const userId = req.id;
     console.log("heloo");
     try {
-      // const card_products = await cardModel.aggregate([
-      //   {
-      //     $match: {
-      //       userId: {
-      //         $eq: new ObjectId(userId),
-      //       },
-      //     },
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: "products",
-      //       localField: "productId",
-      //       foreignField: "_id",
-      //       as: "products",
-      //     },
-      //   },
-      // ]);
-
       const card_products = await cardModel.aggregate([
         {
           $match: {
@@ -521,14 +508,115 @@ class cardController {
     const { card_id } = req.params;
     try {
       const product = await cardModel.findById(card_id);
-      const { quantity } = product;
-      const updatedCard = await cardModel.findOneAndUpdate(
+      await cardModel.findOneAndUpdate(
         { _id: card_id, quantity: { $gt: 1 } }, // Check if quantity > 1
         { $inc: { quantity: -1 } }, // Decrement quantity by 1
         { new: true } // Return the updated document
       );
       responseReturn(res, 200, {
         message: "success",
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  move_to_savelist = async (req, res) => {
+    const { productId, quantity, variantId, size } = req.body;
+    const userId = req.id;
+    try {
+      await cardModel.findOneAndDelete({
+        $and: [
+          {
+            variantId: {
+              $eq: variantId,
+            },
+          },
+          {
+            productId: {
+              $eq: productId,
+            },
+          },
+          {
+            userId: {
+              $eq: userId,
+            },
+          },
+        ],
+      });
+
+      const myProduct = await ProductDetailsModel.findOne({
+        $and: [{ productId: productId }, { _id: variantId }],
+      });
+
+      // console.log(myProduct);
+
+      if (myProduct.size.indexOf(size) == -1) {
+        return responseReturn(res, 200, {
+          message: "size not available",
+          status: 400,
+        });
+      }
+
+      const product = await saveListModel.create({
+        userId,
+        productId,
+        quantity,
+        variantId,
+        size,
+      });
+
+      responseReturn(res, 200, {
+        message: "Move to savelist success",
+        product,
+        status: 200,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  //_________________________ fetch cart Products _______________________
+  get_savelist_products = async (req, res) => {
+    const co = 5;
+    const userId = req.id;
+
+    try {
+      const savedlist = await saveListModel.aggregate([
+        {
+          $match: {
+            userId: {
+              $eq: new ObjectId(userId),
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "variants",
+            localField: "variantId",
+            foreignField: "_id",
+            as: "products",
+          },
+        },
+      ]);
+
+      if (savedlist.length < 1) {
+        responseReturn(res, 200, {
+          message: "save list is empty ",
+          status: 200,
+        });
+      }
+      const stockProduct = savedlist
+        .filter((p) => p.products[0]?.stock >= p.quantity)
+        .map((p) => ({
+          selectedSize: p.size,
+          productDetails: p.products[0],
+        }));
+
+      responseReturn(res, 200, {
+        data: stockProduct,
+        status: 200,
+        message: "saved items fetched successfully",
       });
     } catch (error) {
       console.log(error.message);

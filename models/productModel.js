@@ -80,9 +80,11 @@ const productSchema = new Schema(
     },
     ram: {
       type: String,
+      default: null,
     },
     storage: {
       type: String,
+      default: null,
     },
     type: {
       enum: [
@@ -96,7 +98,7 @@ const productSchema = new Schema(
       type: String,
       default: "cloths",
     },
-    size: { type: String },
+    size: { type: String, default: null },
     colorName: { type: String },
     variations: [
       {

@@ -3,6 +3,16 @@ const cardController = require("../../controllers/home/cardController");
 const { customerMiddleware } = require("../../middlewares/authMiddleware");
 
 router.post(
+  "/home/product/move/savelist",
+  customerMiddleware,
+  cardController.move_to_savelist
+);
+router.get(
+  "/home/product/savelist",
+  customerMiddleware,
+  cardController.get_savelist_products
+);
+router.post(
   "/home/product/add-to-card",
   customerMiddleware,
   cardController.add_to_card
