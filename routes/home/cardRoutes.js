@@ -7,11 +7,23 @@ router.post(
   customerMiddleware,
   cardController.move_to_savelist
 );
+router.post(
+  "/home/product/remove/savelist",
+  customerMiddleware,
+  cardController.remove_from_savelist
+);
+router.post(
+  "/home/product/undo/savelist",
+  customerMiddleware,
+  cardController.move_from_savelist_to_cart
+);
+
 router.get(
   "/home/product/savelist",
   customerMiddleware,
   cardController.get_savelist_products
 );
+
 router.post(
   "/home/product/add-to-card",
   customerMiddleware,

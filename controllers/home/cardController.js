@@ -622,5 +622,97 @@ class cardController {
       console.log(error.message);
     }
   };
+
+  move_from_savelist_to_cart = async (req, res) => {
+    const { productId, quantity, variantId, size } = req.body;
+    const userId = req.id;
+    try {
+      await saveListModel.findOneAndDelete({
+        $and: [
+          {
+            variantId: {
+              $eq: variantId,
+            },
+          },
+          {
+            productId: {
+              $eq: productId,
+            },
+          },
+          {
+            userId: {
+              $eq: userId,
+            },
+          },
+        ],
+      });
+
+      const myProduct = await ProductDetailsModel.findOne({
+        $and: [{ productId: productId }, { _id: variantId }],
+      });
+
+      // console.log(myProduct);
+
+      if (myProduct.size.indexOf(size) == -1) {
+        return responseReturn(res, 200, {
+          message: "size not available",
+          status: 400,
+        });
+      }
+
+      const product = await cardModel.create({
+        userId,
+        productId,
+        quantity,
+        variantId,
+        size,
+      });
+
+      responseReturn(res, 200, {
+        message: "Move to cart success",
+        product,
+        status: 200,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  remove_from_savelist = async (req, res) => {
+    const { productId, variantId } = req.body;
+    const userId = req.id;
+    try {
+      const product = await saveListModel.findOneAndDelete(
+        {
+          $and: [
+            {
+              variantId: {
+                $eq: variantId,
+              },
+            },
+            {
+              productId: {
+                $eq: productId,
+              },
+            },
+            {
+              userId: {
+                $eq: userId,
+              },
+            },
+          ],
+        },
+        { new: true }
+      );
+
+      responseReturn(res, 200, {
+        message: "remove from savelist success",
+        product,
+        status: 200,
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 }
 module.exports = new cardController();
